@@ -9,7 +9,7 @@ commands:
     usage: /<command> equip <primary|support> <type>
   infuse:
     description: Infuse settings and abilities.
-    usage: /<command> settings|ability|trust
+    usage: /<command> settings|ability|trust|primary|support
   pdrain:
     description: Drain the current primary spark.
   sdrain:

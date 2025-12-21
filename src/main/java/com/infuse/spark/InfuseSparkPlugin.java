@@ -593,6 +593,17 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             }
             return true;
         }
+        if (args.length >= 1 && (args[0].equalsIgnoreCase("primary") || args[0].equalsIgnoreCase("support")
+            || args[0].equalsIgnoreCase("secondary"))) {
+            if (args.length >= 2) {
+                if (args[0].equalsIgnoreCase("primary")) {
+                    data.setPrimary(parsePrimaryType(args[1]));
+                } else {
+                    data.setSupport(parseSupportType(args[1]));
+                }
+            }
+            return true;
+        }
         if (args.length >= 1 && args[0].equalsIgnoreCase("temp")) {
             return true;
         }
@@ -1308,7 +1319,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         }
         if (command.getName().equalsIgnoreCase("infuse")) {
             if (args.length == 1) {
-                return List.of("settings", "ability", "trust");
+                return List.of("settings", "ability", "trust", "primary", "support", "secondary");
             }
             if (args.length == 2 && args[0].equalsIgnoreCase("settings")) {
                 return List.of("control_set");
@@ -1318,6 +1329,12 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             }
             if (args.length == 2 && args[0].equalsIgnoreCase("ability")) {
                 return List.of("support", "primary");
+            }
+            if (args.length == 2 && args[0].equalsIgnoreCase("primary")) {
+                return List.of("empty", "strength", "heart", "haste", "invisibility", "feather", "frost", "thunder", "regeneration");
+            }
+            if (args.length == 2 && (args[0].equalsIgnoreCase("support") || args[0].equalsIgnoreCase("secondary"))) {
+                return List.of("empty", "ocean", "fire", "emerald", "speed");
             }
             if (args.length == 2 && args[0].equalsIgnoreCase("trust")) {
                 return List.of("add", "remove");
