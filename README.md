@@ -22,8 +22,11 @@ Standalone Paper plugin conversion of the original Infuse Skript. This plugin ke
 - `/sdrain`
 
 ## Resource Pack
-The plugin serves a resource pack from the plugin data folder. Copy `Infuse Pack.zip` into
-`plugins/Infuse/` (same folder as `config.yml`) and the plugin will host it over HTTP.
+The plugin serves a resource pack from the plugin data folder. To get the texture pack:
+1. Use the original `Infuse Pack.zip` from this repository root (next to `README.md`), **or**
+2. Use the same `Infuse Pack.zip` you already had in your previous setup.
+
+Then copy `Infuse Pack.zip` into `plugins/Infuse/` (same folder as `config.yml`) and the plugin will host it over HTTP.
 
 Configure `config.yml`:
 ```yaml
