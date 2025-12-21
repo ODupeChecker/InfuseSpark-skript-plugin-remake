@@ -1,0 +1,5 @@
+resource-pack:
+  enable: true
+  public-url: ""
+  port: 8173
+  path: "Infuse Pack.zip"
