@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.UUID;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import org.bukkit.Particle;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -36,6 +37,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Pig;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -52,6 +54,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -73,15 +76,19 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
     private static final UUID FIRE_ATTACK_MODIFIER = UUID.fromString("b7db23cc-fba1-4f7a-8896-9cf813f6a47b");
     private static final UUID HEART_EQUIP_MODIFIER = UUID.fromString("1f57d91f-1f48-4c91-bbb5-7e8d7a4b59a4");
     private static final UUID HEART_SPARK_MODIFIER = UUID.fromString("8f7625b1-2f43-4a28-9e1c-c5c1c4e5c169");
+    private static final UUID PIG_KNOCKBACK_MODIFIER = UUID.fromString("e3a44368-b83e-49a6-a79c-0d0c5978a9c8");
 
     private final Map<UUID, PlayerData> playerData = new HashMap<>();
+    private final Map<UUID, Integer> pigHitCounts = new HashMap<>();
     private final Set<UUID> heartEquipApplied = new HashSet<>();
+    private final Set<UUID> pigKnockbackApplied = new HashSet<>();
     private final Set<UUID> invisibilityHidden = new HashSet<>();
     private final Random random = new Random();
 
     private PlayerDataStore dataStore;
     private InfuseItems infuseItems;
     private NamespacedKey infuseItemKey;
+    private NamespacedKey pigSparkKey;
     private HttpServer resourcePackServer;
     private String resourcePackUrl;
     private byte[] resourcePackHash;
@@ -90,6 +97,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
     public void onEnable() {
         saveDefaultConfig();
         this.infuseItemKey = new NamespacedKey(this, "infuse_item");
+        this.pigSparkKey = new NamespacedKey(this, "pig_spark_owner");
         this.infuseItems = new InfuseItems(this);
         infuseItems.registerItems();
         infuseItems.registerRecipes();
@@ -309,6 +317,11 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
                     data.setActionBarPrimary("\uE021");
                     data.setPrimaryColorCode("&c&l");
                 }
+                case 9 -> {
+                    data.setActionBarPrimary("\uE027");
+                    data.setPrimaryColorCode("&d&l");
+                    applyPigEquipped(player);
+                }
                 default -> {
                 }
             }
@@ -359,9 +372,19 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
                     data.setActionBarPrimary("\uE009");
                     data.setPrimaryColorCode("&f&l");
                 }
+                case 9 -> {
+                    data.setActionBarPrimary("\uE026");
+                    data.setPrimaryColorCode("&f&l");
+                    applyPigEquipped(player);
+                }
                 default -> {
                 }
             }
+        }
+
+        if (data.getPrimary() != 9) {
+            pigHitCounts.remove(player.getUniqueId());
+            removePigKnockback(player);
         }
 
         if (data.isSupportActive()) {
@@ -470,6 +493,22 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         applyPotion(player, PotionEffectType.SPEED, 2, 2, false, false);
     }
 
+    private void applyPigEquipped(Player player) {
+        if (pigKnockbackApplied.contains(player.getUniqueId())) {
+            return;
+        }
+        applyAttributeModifier(player, Attribute.GENERIC_KNOCKBACK_RESISTANCE, PIG_KNOCKBACK_MODIFIER, 0.05);
+        pigKnockbackApplied.add(player.getUniqueId());
+    }
+
+    private void removePigKnockback(Player player) {
+        if (!pigKnockbackApplied.contains(player.getUniqueId())) {
+            return;
+        }
+        removeAttributeModifier(player, Attribute.GENERIC_KNOCKBACK_RESISTANCE, PIG_KNOCKBACK_MODIFIER);
+        pigKnockbackApplied.remove(player.getUniqueId());
+    }
+
     private void applyPotion(Player player, PotionEffectType type, int level, int seconds, boolean particles, boolean icon) {
         int amplifier = Math.max(0, level - 1);
         PotionEffect effect = new PotionEffect(type, seconds * TICKS_PER_SECOND, amplifier, false, particles, icon);
@@ -514,6 +553,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         removeAttributeModifier(player, Attribute.GENERIC_ATTACK_DAMAGE, OCEAN_ATTACK_MODIFIER);
         removeAttributeModifier(player, Attribute.GENERIC_ATTACK_DAMAGE, FIRE_ATTACK_MODIFIER);
         removeAttributeModifier(player, Attribute.GENERIC_MAX_HEALTH, HEART_SPARK_MODIFIER);
+        removeAttributeModifier(player, Attribute.GENERIC_KNOCKBACK_RESISTANCE, PIG_KNOCKBACK_MODIFIER);
     }
 
     private boolean handleInfuseCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -599,6 +639,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             case "frost" -> 6;
             case "thunder" -> 7;
             case "regeneration" -> 8;
+            case "pig" -> 9;
             default -> 0;
         };
     }
@@ -736,6 +777,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             case 6 -> runFrostSpark(player, data);
             case 7 -> runThunderSpark(player, data);
             case 8 -> runRegenerationSpark(player, data);
+            case 9 -> runPigSpark(player, data);
             default -> {
             }
         }
@@ -947,6 +989,92 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         }.runTaskTimer(this, 0L, TICKS_PER_SECOND);
     }
 
+    private void runPigSpark(Player player, PlayerData data) {
+        data.setPrimaryActive(true);
+        data.setPrimarySeconds(1);
+        data.setPrimaryMinutes(0);
+        player.playSound(player.getLocation(), Sound.ENTITY_PIG_AMBIENT, 1f, 1.2f);
+        Vector baseDirection = player.getLocation().getDirection().normalize();
+        for (int i = 0; i < 3; i++) {
+            Vector spread = new Vector(
+                (random.nextDouble() - 0.5) * 0.2,
+                (random.nextDouble() - 0.5) * 0.1,
+                (random.nextDouble() - 0.5) * 0.2
+            );
+            launchPigProjectile(player, data, baseDirection.clone().add(spread).normalize());
+        }
+        Bukkit.getScheduler().runTaskLater(this, () -> {
+            data.setPrimaryActive(false);
+            data.setPrimarySeconds(30);
+            data.setPrimaryMinutes(0);
+        }, TICKS_PER_SECOND);
+    }
+
+    private void launchPigProjectile(Player shooter, PlayerData data, Vector direction) {
+        Pig pig = shooter.getWorld().spawn(shooter.getLocation().add(0, 1.2, 0), Pig.class, spawned -> {
+            spawned.setBaby();
+            spawned.setAI(false);
+            spawned.setInvulnerable(true);
+            spawned.setSilent(true);
+            spawned.setPersistent(false);
+            spawned.setRemoveWhenFarAway(true);
+        });
+        pig.getPersistentDataContainer().set(pigSparkKey, PersistentDataType.STRING, shooter.getUniqueId().toString());
+        pig.setVelocity(direction.multiply(1.6));
+        new BukkitRunnable() {
+            int ticks = 0;
+
+            @Override
+            public void run() {
+                if (!pig.isValid() || pig.isDead()) {
+                    cancel();
+                    return;
+                }
+                if (pig.isOnGround() || ticks >= 60) {
+                    detonatePig(pig, shooter, data);
+                    cancel();
+                    return;
+                }
+                for (Player target : pig.getWorld().getPlayers()) {
+                    if (target.getUniqueId().equals(shooter.getUniqueId())) {
+                        continue;
+                    }
+                    if (data.getTrusted().contains(target.getUniqueId())) {
+                        continue;
+                    }
+                    if (target.getLocation().distanceSquared(pig.getLocation()) <= 1.2) {
+                        detonatePig(pig, shooter, data);
+                        cancel();
+                        return;
+                    }
+                }
+                ticks++;
+            }
+        }.runTaskTimer(this, 1L, 1L);
+    }
+
+    private void detonatePig(Pig pig, Player shooter, PlayerData data) {
+        if (!pig.isValid() || pig.isDead()) {
+            return;
+        }
+        var world = pig.getWorld();
+        var location = pig.getLocation();
+        pig.remove();
+        world.spawnParticle(Particle.EXPLOSION, location, 1);
+        world.playSound(location, Sound.ENTITY_GENERIC_EXPLODE, 1f, 1f);
+        for (Player target : world.getPlayers()) {
+            if (target.getUniqueId().equals(shooter.getUniqueId())) {
+                continue;
+            }
+            if (data.getTrusted().contains(target.getUniqueId())) {
+                continue;
+            }
+            if (target.getLocation().distanceSquared(location) <= 4.0) {
+                target.damage(4.0, shooter);
+            }
+        }
+    }
+
     private void hidePlayerFromAll(Player player) {
         for (Player target : Bukkit.getOnlinePlayers()) {
             if (target.equals(player)) {
@@ -990,6 +1118,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             case 6 -> InfuseItem.PRIMARY_FROST;
             case 7 -> InfuseItem.PRIMARY_THUNDER;
             case 8 -> InfuseItem.PRIMARY_REGENERATION;
+            case 9 -> InfuseItem.PRIMARY_PIG;
             default -> null;
         };
         if (item != null) {
@@ -1022,6 +1151,8 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         Player player = event.getPlayer();
         removeTemporaryModifiers(player);
         revealPlayerToAll(player);
+        pigHitCounts.remove(player.getUniqueId());
+        pigKnockbackApplied.remove(player.getUniqueId());
         PlayerData data = getData(player);
         dataStore.save(data);
         try {
@@ -1064,6 +1195,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             case PRIMARY_FROST -> 6;
             case PRIMARY_THUNDER -> 7;
             case PRIMARY_REGENERATION -> 8;
+            case PRIMARY_PIG -> 9;
             default -> 0;
         };
     }
@@ -1230,6 +1362,27 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
     }
 
     @EventHandler
+    public void onPigEffectHit(EntityDamageByEntityEvent event) {
+        if (!(event.getEntity() instanceof Player player)) {
+            return;
+        }
+        if (event.isCancelled()) {
+            return;
+        }
+        PlayerData data = getData(player);
+        if (data.getPrimary() != 9) {
+            return;
+        }
+        int hits = pigHitCounts.getOrDefault(player.getUniqueId(), 0) + 1;
+        if (hits >= 5) {
+            pigHitCounts.put(player.getUniqueId(), 0);
+            applyPotion(player, PotionEffectType.SPEED, 3, 5, false, false);
+        } else {
+            pigHitCounts.put(player.getUniqueId(), hits);
+        }
+    }
+
+    @EventHandler
     public void onBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
         PlayerData data = getData(player);
@@ -1289,6 +1442,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
                 case 6 -> InfuseItem.PRIMARY_FROST;
                 case 7 -> InfuseItem.PRIMARY_THUNDER;
                 case 8 -> InfuseItem.PRIMARY_REGENERATION;
+                case 9 -> InfuseItem.PRIMARY_PIG;
                 default -> InfuseItem.PRIMARY_STRENGTH;
             });
             player.getWorld().dropItemNaturally(player.getLocation(), primaryItem);
@@ -1316,7 +1470,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             }
             if (args.length == 4 && args[0].equalsIgnoreCase("spark") && args[1].equalsIgnoreCase("equip")) {
                 if (args[2].equalsIgnoreCase("primary")) {
-                    return List.of("empty", "strength", "heart", "haste", "invisibility", "feather", "frost", "thunder", "regeneration");
+                    return List.of("empty", "strength", "heart", "haste", "invisibility", "feather", "frost", "thunder", "regeneration", "pig");
                 }
                 if (args[2].equalsIgnoreCase("support")) {
                     return List.of("empty", "ocean", "fire", "emerald", "speed");

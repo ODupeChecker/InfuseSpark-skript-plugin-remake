@@ -29,7 +29,8 @@ public class InfuseItems {
         PRIMARY_INVISIBILITY,
         PRIMARY_REGENERATION,
         PRIMARY_STRENGTH,
-        PRIMARY_THUNDER
+        PRIMARY_THUNDER,
+        PRIMARY_PIG
     }
 
     private final InfuseSparkPlugin plugin;
@@ -224,6 +225,22 @@ public class InfuseItems {
             ),
             InfuseItem.PRIMARY_THUNDER
         ));
+
+        items.put(InfuseItem.PRIMARY_PIG, createPotion(
+            "&d&lPig Effect",
+            Color.fromRGB(255, 105, 180),
+            List.of(
+                "&9Primary Effect",
+                "&7After being hit 5 times gain &oSpeed III &7for 5s",
+                "&7Take 5% less knockback",
+                "",
+                "&9Spark Ability",
+                "&7Send out a barrage of exploding baby pigs",
+                "",
+                "&8Duration: &31s &8Cooldown: &330s"
+            ),
+            InfuseItem.PRIMARY_PIG
+        ));
     }
 
     public void registerRecipes() {
@@ -317,6 +334,14 @@ public class InfuseItems {
             new Ingredient('b', Material.SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE),
             new Ingredient('c', Material.TRIDENT),
             new Ingredient('d', Material.CREEPER_HEAD)
+        );
+
+        registerRecipe("pig_effect", items.get(InfuseItem.PRIMARY_PIG),
+            "aba", "cdc", "aba",
+            new Ingredient('a', Material.PORKCHOP),
+            new Ingredient('b', Material.GOLDEN_CARROT),
+            new Ingredient('c', Material.SADDLE),
+            new Ingredient('d', Material.PIGLIN_HEAD)
         );
     }
 
