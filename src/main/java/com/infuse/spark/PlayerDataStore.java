@@ -33,6 +33,10 @@ public class PlayerDataStore {
         }
         data.setPrimary(section.getInt("primary", 0));
         data.setSupport(section.getInt("support", 0));
+        String primaryGroup = section.getString("primaryGroup", EffectGroup.PRIMARY.name());
+        String supportGroup = section.getString("supportGroup", EffectGroup.SUPPORT.name());
+        data.setPrimaryGroup(parseGroup(primaryGroup, EffectGroup.PRIMARY));
+        data.setSupportGroup(parseGroup(supportGroup, EffectGroup.SUPPORT));
         data.setControlSet(section.getInt("controlSet", 0));
         data.setPrimaryMinutes(section.getInt("primaryMinutes", 0));
         data.setPrimarySeconds(section.getInt("primarySeconds", 0));
@@ -50,6 +54,8 @@ public class PlayerDataStore {
         String path = "players." + data.getUuid();
         configuration.set(path + ".primary", data.getPrimary());
         configuration.set(path + ".support", data.getSupport());
+        configuration.set(path + ".primaryGroup", data.getPrimaryGroup().name());
+        configuration.set(path + ".supportGroup", data.getSupportGroup().name());
         configuration.set(path + ".controlSet", data.getControlSet());
         configuration.set(path + ".primaryMinutes", data.getPrimaryMinutes());
         configuration.set(path + ".primarySeconds", data.getPrimarySeconds());
@@ -57,6 +63,14 @@ public class PlayerDataStore {
         configuration.set(path + ".supportSeconds", data.getSupportSeconds());
         configuration.set(path + ".joined", data.isJoined());
         configuration.set(path + ".trusted", data.getTrusted().stream().map(UUID::toString).collect(Collectors.toList()));
+    }
+
+    private EffectGroup parseGroup(String value, EffectGroup fallback) {
+        try {
+            return EffectGroup.valueOf(value);
+        } catch (IllegalArgumentException ex) {
+            return fallback;
+        }
     }
 
     public void saveToDisk() throws IOException {

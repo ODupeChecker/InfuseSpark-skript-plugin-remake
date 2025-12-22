@@ -11,11 +11,14 @@ public class PlayerData {
     private int controlSet;
     private boolean primaryActive;
     private boolean supportActive;
+    private EffectGroup primaryGroup = EffectGroup.PRIMARY;
+    private EffectGroup supportGroup = EffectGroup.SUPPORT;
     private int primaryMinutes;
     private int primarySeconds;
     private int supportMinutes;
     private int supportSeconds;
     private boolean joined;
+    private int nextDrainSlot = 1;
     private final Set<UUID> trusted = new HashSet<>();
 
     private String primaryShow = "";
@@ -79,6 +82,22 @@ public class PlayerData {
         this.supportActive = supportActive;
     }
 
+    public EffectGroup getPrimaryGroup() {
+        return primaryGroup;
+    }
+
+    public void setPrimaryGroup(EffectGroup primaryGroup) {
+        this.primaryGroup = primaryGroup;
+    }
+
+    public EffectGroup getSupportGroup() {
+        return supportGroup;
+    }
+
+    public void setSupportGroup(EffectGroup supportGroup) {
+        this.supportGroup = supportGroup;
+    }
+
     public int getPrimaryMinutes() {
         return primaryMinutes;
     }
@@ -109,6 +128,14 @@ public class PlayerData {
 
     public void setSupportSeconds(int supportSeconds) {
         this.supportSeconds = supportSeconds;
+    }
+
+    public int getNextDrainSlot() {
+        return nextDrainSlot;
+    }
+
+    public void setNextDrainSlot(int nextDrainSlot) {
+        this.nextDrainSlot = nextDrainSlot;
     }
 
     public boolean isJoined() {

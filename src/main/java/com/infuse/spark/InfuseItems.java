@@ -45,7 +45,7 @@ public class InfuseItems {
             "&aEmerald Effect",
             Color.fromRGB(144, 238, 144),
             List.of(
-                "&9Support Effect",
+                "&9Effect",
                 "&7Grants &oHero of the Village III",
                 "",
                 "&9Spark Ability",
@@ -60,7 +60,7 @@ public class InfuseItems {
             "&6Fire Effect",
             Color.ORANGE,
             List.of(
-                "&9Support Effect",
+                "&9Effect",
                 "&7Grants &oFire Resistance",
                 "&7&o+1 Attack Damage while &6on fire",
                 "",
@@ -76,7 +76,7 @@ public class InfuseItems {
             "&3Ocean Effect",
             Color.BLUE,
             List.of(
-                "&9Support Effect",
+                "&9Effect",
                 "&7Grants &oDolphin's Grace",
                 "&7Grants &oConduit Power",
                 "&7&o+2 Attack Damage while &9in water",
@@ -93,7 +93,7 @@ public class InfuseItems {
             "&bSpeed Effect",
             Color.AQUA,
             List.of(
-                "&9Support Effect",
+                "&9Effect",
                 "&7Grants &oSpeed II",
                 "",
                 "&9Spark Ability",
@@ -108,7 +108,7 @@ public class InfuseItems {
             "&7Feather Effect",
             Color.fromRGB(192, 192, 192),
             List.of(
-                "&9Primary Effect",
+                "&9Effect",
                 "&7No fall damage",
                 "&7Can run on &cWater&7, &6Lava&7, &3Ice&7, & &3Snow",
                 "",
@@ -124,7 +124,7 @@ public class InfuseItems {
             "&3Frost Effect",
             Color.AQUA,
             List.of(
-                "&9Primary Effect",
+                "&9Effect",
                 "&7&oSpeed X &7on &3Ice &7& &oSpeed III &7on &bSnow",
                 "",
                 "&9Spark Ability",
@@ -140,7 +140,7 @@ public class InfuseItems {
             "&6Haste Effect",
             Color.YELLOW,
             List.of(
-                "&9Primary Effect",
+                "&9Effect",
                 "&7Grants &oHaste II &7and &7&oFortune IV",
                 "",
                 "&9Spark Ability",
@@ -155,7 +155,7 @@ public class InfuseItems {
             "&4Heart Effect",
             Color.RED,
             List.of(
-                "&9Primary Effect",
+                "&9Effect",
                 "&7Grants &c15 total hearts",
                 "",
                 "&9Spark Ability",
@@ -170,7 +170,7 @@ public class InfuseItems {
             "&7Invisibility Effect",
             Color.PURPLE,
             List.of(
-                "&9Primary Effect",
+                "&9Effect",
                 "&7Grants &oInvisibility",
                 "",
                 "&9Spark Ability",
@@ -185,7 +185,7 @@ public class InfuseItems {
             "&4Regeneration Effect",
             Color.RED,
             List.of(
-                "&9Primary Effect",
+                "&9Effect",
                 "&7Grants &oRegeneration II &7when attacking enemies",
                 "",
                 "&9Spark Ability",
@@ -200,7 +200,7 @@ public class InfuseItems {
             "&cStrength Effect",
             Color.fromRGB(139, 0, 0),
             List.of(
-                "&9Primary Effect",
+                "&9Effect",
                 "&7Grants &oAttack +2",
                 "",
                 "&9Spark Ability",
@@ -215,7 +215,7 @@ public class InfuseItems {
             "&3Thunder Effect",
             Color.YELLOW,
             List.of(
-                "&9Primary Effect",
+                "&9Effect",
                 "&7Strikes attacked players with &6Lightning",
                 "",
                 "&9Spark Ability",
@@ -230,7 +230,7 @@ public class InfuseItems {
             "&d&lPig Effect",
             Color.fromRGB(255, 105, 180),
             List.of(
-                "&9Primary Effect",
+                "&9Effect",
                 "&7After being hit 5 times gain &oSpeed III &7for 5s",
                 "&7Take 5% less knockback",
                 "",
