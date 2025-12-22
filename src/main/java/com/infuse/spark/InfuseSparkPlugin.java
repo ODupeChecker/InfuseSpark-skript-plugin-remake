@@ -50,14 +50,12 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabCompleter {
@@ -112,10 +110,8 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         Bukkit.getPluginManager().registerEvents(this, this);
         Objects.requireNonNull(getCommand("infuse")).setExecutor(this::handleInfuseCommand);
         Objects.requireNonNull(getCommand("infuse")).setTabCompleter(this);
-        Objects.requireNonNull(getCommand("infusespark")).setExecutor(this::handleInfuseSparkCommand);
-        Objects.requireNonNull(getCommand("infusespark")).setTabCompleter(this);
-        Objects.requireNonNull(getCommand("pdrain")).setExecutor(this::handlePrimaryDrain);
-        Objects.requireNonNull(getCommand("sdrain")).setExecutor(this::handleSupportDrain);
+        Objects.requireNonNull(getCommand("drain")).setExecutor(this::handleDrain);
+        Objects.requireNonNull(getCommand("drain")).setTabCompleter(this);
 
         Bukkit.getOnlinePlayers().forEach(this::loadPlayerData);
 
@@ -520,20 +516,58 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         removeAttributeModifier(player, Attribute.GENERIC_MAX_HEALTH, HEART_SPARK_MODIFIER);
     }
 
-    private boolean handleInfuseSparkCommand(CommandSender sender, Command command, String label, String[] args) {
+    private boolean handleInfuseCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player player)) {
             sender.sendMessage("Player only.");
             return true;
         }
+        PlayerData data = getData(player);
+        if (args.length >= 1 && args[0].equalsIgnoreCase("spark")) {
+            return handleSparkSubcommand(player, data, args);
+        }
+        if (args.length >= 1 && args[0].equalsIgnoreCase("settings")) {
+            if (args.length >= 3 && args[1].equalsIgnoreCase("control_set")) {
+                handleControlSet(player, data, args[2]);
+            }
+            return true;
+        }
+        if (args.length >= 1 && args[0].equalsIgnoreCase("primary")) {
+            runPrimaryAbility(player, data);
+            return true;
+        }
+        if (args.length >= 1 && args[0].equalsIgnoreCase("support")) {
+            runSupportAbility(player, data);
+            return true;
+        }
+        if (args.length >= 1 && args[0].equalsIgnoreCase("temp")) {
+            return true;
+        }
+        if (args.length >= 1 && args[0].equalsIgnoreCase("ability")) {
+            if (args.length >= 2) {
+                if (args[1].equalsIgnoreCase("primary")) {
+                    runPrimaryAbility(player, data);
+                } else if (args[1].equalsIgnoreCase("support")) {
+                    runSupportAbility(player, data);
+                }
+            }
+            return true;
+        }
+        if (args.length >= 1 && args[0].equalsIgnoreCase("trust")) {
+            handleTrustCommand(player, data, args);
+            return true;
+        }
+        return true;
+    }
+
+    private boolean handleSparkSubcommand(Player player, PlayerData data, String[] args) {
         if (!player.hasPermission("infuse.command.infusespark")) {
             player.sendMessage(ChatColor.RED + "You do not have permission to use this command.");
             return true;
         }
-        if (args.length >= 1 && args[0].equalsIgnoreCase("equip")) {
-            if (args.length >= 3) {
-                String category = args[1].toLowerCase(Locale.ROOT);
-                String type = args[2].toLowerCase(Locale.ROOT);
-                PlayerData data = getData(player);
+        if (args.length >= 2 && args[1].equalsIgnoreCase("equip")) {
+            if (args.length >= 4) {
+                String category = args[2].toLowerCase(Locale.ROOT);
+                String type = args[3].toLowerCase(Locale.ROOT);
                 if (category.equals("primary")) {
                     data.setPrimary(parsePrimaryType(type));
                 } else if (category.equals("support")) {
@@ -542,8 +576,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             }
             return true;
         }
-        if (args.length >= 1 && args[0].equalsIgnoreCase("cd_reset")) {
-            PlayerData data = getData(player);
+        if (args.length >= 2 && args[1].equalsIgnoreCase("cd_reset")) {
             data.setSupportActive(false);
             data.setPrimaryActive(false);
             data.setSupportMinutes(-2);
@@ -579,49 +612,6 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             case "speed" -> 4;
             default -> 0;
         };
-    }
-
-    private boolean handleInfuseCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage("Player only.");
-            return true;
-        }
-        PlayerData data = getData(player);
-        if (args.length >= 1 && args[0].equalsIgnoreCase("settings")) {
-            if (args.length >= 3 && args[1].equalsIgnoreCase("control_set")) {
-                handleControlSet(player, data, args[2]);
-            }
-            return true;
-        }
-        if (args.length >= 1 && (args[0].equalsIgnoreCase("primary") || args[0].equalsIgnoreCase("support")
-            || args[0].equalsIgnoreCase("secondary"))) {
-            if (args.length >= 2) {
-                if (args[0].equalsIgnoreCase("primary")) {
-                    data.setPrimary(parsePrimaryType(args[1]));
-                } else {
-                    data.setSupport(parseSupportType(args[1]));
-                }
-            }
-            return true;
-        }
-        if (args.length >= 1 && args[0].equalsIgnoreCase("temp")) {
-            return true;
-        }
-        if (args.length >= 1 && args[0].equalsIgnoreCase("ability")) {
-            if (args.length >= 2) {
-                if (args[1].equalsIgnoreCase("primary")) {
-                    runPrimaryAbility(player, data);
-                } else if (args[1].equalsIgnoreCase("support")) {
-                    runSupportAbility(player, data);
-                }
-            }
-            return true;
-        }
-        if (args.length >= 1 && args[0].equalsIgnoreCase("trust")) {
-            handleTrustCommand(player, data, args);
-            return true;
-        }
-        return true;
     }
 
     private void handleControlSet(Player player, PlayerData data, String mode) {
@@ -669,10 +659,23 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         }
     }
 
-    private boolean handlePrimaryDrain(CommandSender sender, Command command, String label, String[] args) {
+    private boolean handleDrain(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player player)) {
             return true;
         }
+        if (args.length < 1) {
+            return true;
+        }
+        if (args[0].equals("1")) {
+            return handlePrimaryDrain(player);
+        }
+        if (args[0].equals("2")) {
+            return handleSupportDrain(player);
+        }
+        return true;
+    }
+
+    private boolean handlePrimaryDrain(Player player) {
         PlayerData data = getData(player);
         if (READY_SPACES.equals(data.getPrimaryShow())) {
             if (data.getPrimary() != 0) {
@@ -685,10 +688,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         return true;
     }
 
-    private boolean handleSupportDrain(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
-            return true;
-        }
+    private boolean handleSupportDrain(Player player) {
         PlayerData data = getData(player);
         if (READY_SPACES.equals(data.getSupportShow())) {
             if (data.getSupport() != 0) {
@@ -1298,28 +1298,32 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        if (command.getName().equalsIgnoreCase("infusespark")) {
+        if (command.getName().equalsIgnoreCase("drain")) {
             if (args.length == 1) {
-                return List.of("equip", "cd_reset");
+                return List.of("1", "2");
             }
-            if (args.length == 2 && args[0].equalsIgnoreCase("equip")) {
-                return List.of("primary", "support");
-            }
-            if (args.length == 3 && args[0].equalsIgnoreCase("equip")) {
-                if (args[1].equalsIgnoreCase("primary")) {
-                    return List.of("empty", "strength", "heart", "haste", "invisibility", "feather", "frost", "thunder", "regeneration");
-                }
-                if (args[1].equalsIgnoreCase("support")) {
-                    return List.of("empty", "ocean", "fire", "emerald", "speed");
-                }
-            }
-            if (args.length == 2 && args[0].equalsIgnoreCase("cd_reset")) {
-                return Bukkit.getOnlinePlayers().stream().map(Player::getName).toList();
-            }
+            return List.of();
         }
         if (command.getName().equalsIgnoreCase("infuse")) {
             if (args.length == 1) {
-                return List.of("settings", "ability", "trust", "primary", "support", "secondary");
+                return List.of("spark", "settings", "ability", "trust", "primary", "support");
+            }
+            if (args.length == 2 && args[0].equalsIgnoreCase("spark")) {
+                return List.of("equip", "cd_reset");
+            }
+            if (args.length == 3 && args[0].equalsIgnoreCase("spark") && args[1].equalsIgnoreCase("equip")) {
+                return List.of("primary", "support");
+            }
+            if (args.length == 4 && args[0].equalsIgnoreCase("spark") && args[1].equalsIgnoreCase("equip")) {
+                if (args[2].equalsIgnoreCase("primary")) {
+                    return List.of("empty", "strength", "heart", "haste", "invisibility", "feather", "frost", "thunder", "regeneration");
+                }
+                if (args[2].equalsIgnoreCase("support")) {
+                    return List.of("empty", "ocean", "fire", "emerald", "speed");
+                }
+            }
+            if (args.length == 3 && args[0].equalsIgnoreCase("spark") && args[1].equalsIgnoreCase("cd_reset")) {
+                return Bukkit.getOnlinePlayers().stream().map(Player::getName).toList();
             }
             if (args.length == 2 && args[0].equalsIgnoreCase("settings")) {
                 return List.of("control_set");
@@ -1329,12 +1333,6 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             }
             if (args.length == 2 && args[0].equalsIgnoreCase("ability")) {
                 return List.of("support", "primary");
-            }
-            if (args.length == 2 && args[0].equalsIgnoreCase("primary")) {
-                return List.of("empty", "strength", "heart", "haste", "invisibility", "feather", "frost", "thunder", "regeneration");
-            }
-            if (args.length == 2 && (args[0].equalsIgnoreCase("support") || args[0].equalsIgnoreCase("secondary"))) {
-                return List.of("empty", "ocean", "fire", "emerald", "speed");
             }
             if (args.length == 2 && args[0].equalsIgnoreCase("trust")) {
                 return List.of("add", "remove");

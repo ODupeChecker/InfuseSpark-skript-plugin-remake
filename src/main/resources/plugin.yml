@@ -3,18 +3,13 @@ version: 1.0.0
 main: com.infuse.spark.InfuseSparkPlugin
 api-version: '1.21'
 commands:
-  infusespark:
-    description: Manage Infuse spark selection.
-    permission: infuse.command.infusespark
-    usage: /<command> equip <primary|support> <type>
   infuse:
-    description: Infuse settings and abilities.
-    usage: /<command> settings|ability|trust|primary|support
-  pdrain:
-    description: Drain the current primary spark.
-  sdrain:
-    description: Drain the current support spark.
+    description: Infuse settings, abilities, and spark selection.
+    usage: /<command> spark|settings|ability|trust|primary|support
+  drain:
+    description: Drain the current primary or support spark.
+    usage: /<command> <1|2>
 permissions:
   infuse.command.infusespark:
-    description: Allows use of /infusespark.
+    description: Allows use of /infuse spark.
     default: op

@@ -5,21 +5,20 @@ Standalone Paper plugin conversion of the original Infuse Skript. This plugin ke
 ## Features
 - Primary and support spark items with the same recipes and lore.
 - Ability activations with the same cooldowns, sounds, and action bar icons.
-- Support for `/infuse`, `/infusespark`, `/pdrain`, and `/sdrain` commands.
-- Built-in HTTP server to serve the bundled resource pack.
+- Support for `/infuse` and `/drain` commands.
+- Built-in HTTP server to serve the resource pack.
 
 ## Commands
-- `/infusespark equip <primary|support> <type>`
-- `/infusespark cd_reset`
+- `/infuse spark equip <primary|support> <type>`
+- `/infuse spark cd_reset`
 - `/infuse settings control_set <offhand|crouch_mouseclicks|custom_keys>`
-- `/infuse primary <strength|heart|haste|invisibility|feather|frost|thunder|regeneration|empty>`
-- `/infuse support <ocean|fire|emerald|speed|empty>`
-- `/infuse secondary <ocean|fire|emerald|speed|empty>` (alias)
+- `/infuse primary` (activate primary ability)
+- `/infuse support` (activate support ability)
 - `/infuse ability <primary|support>`
 - `/infuse trust add <player>`
 - `/infuse trust remove <player|all>`
-- `/pdrain`
-- `/sdrain`
+- `/drain 1` (drain primary)
+- `/drain 2` (drain support)
 
 ## Resource Pack
 The plugin serves a resource pack from the plugin data folder. To get the texture pack:
@@ -40,7 +39,7 @@ If `public-url` is left blank, the plugin builds the URL from your server IP and
 
 ## Build
 ```bash
-mvn clean package test
+mvn clean package
 ```
 
 The plugin JAR will be generated in `target/`.
