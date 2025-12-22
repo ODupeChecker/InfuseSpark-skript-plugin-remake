@@ -23,7 +23,6 @@ import java.util.Set;
 import java.util.UUID;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import org.bukkit.Particle;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -37,7 +36,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Pig;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -54,7 +52,6 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -88,7 +85,6 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
     private PlayerDataStore dataStore;
     private InfuseItems infuseItems;
     private NamespacedKey infuseItemKey;
-    private NamespacedKey pigSparkKey;
     private HttpServer resourcePackServer;
     private String resourcePackUrl;
     private byte[] resourcePackHash;
@@ -97,7 +93,6 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
     public void onEnable() {
         saveDefaultConfig();
         this.infuseItemKey = new NamespacedKey(this, "infuse_item");
-        this.pigSparkKey = new NamespacedKey(this, "pig_spark_owner");
         this.infuseItems = new InfuseItems(this);
         infuseItems.registerItems();
         infuseItems.registerRecipes();
@@ -991,88 +986,37 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
 
     private void runPigSpark(Player player, PlayerData data) {
         data.setPrimaryActive(true);
-        data.setPrimarySeconds(1);
+        data.setPrimarySeconds(50);
         data.setPrimaryMinutes(0);
+        data.setPigSparkPrimed(true);
         player.playSound(player.getLocation(), Sound.ENTITY_PIG_AMBIENT, 1f, 1.2f);
-        Vector baseDirection = player.getLocation().getDirection().normalize();
-        for (int i = 0; i < 3; i++) {
-            Vector spread = new Vector(
-                (random.nextDouble() - 0.5) * 0.2,
-                (random.nextDouble() - 0.5) * 0.1,
-                (random.nextDouble() - 0.5) * 0.2
-            );
-            launchPigProjectile(player, data, baseDirection.clone().add(spread).normalize());
-        }
         Bukkit.getScheduler().runTaskLater(this, () -> {
-            data.setPrimaryActive(false);
-            data.setPrimarySeconds(30);
-            data.setPrimaryMinutes(0);
-        }, TICKS_PER_SECOND);
-    }
-
-    private void launchPigProjectile(Player shooter, PlayerData data, Vector direction) {
-        Pig pig = shooter.getWorld().spawn(shooter.getLocation().add(0, 1.2, 0), Pig.class, spawned -> {
-            spawned.setBaby();
-            spawned.setAI(false);
-            spawned.setInvulnerable(true);
-            spawned.setSilent(true);
-            spawned.setPersistent(false);
-            spawned.setRemoveWhenFarAway(true);
-        });
-        pig.getPersistentDataContainer().set(pigSparkKey, PersistentDataType.STRING, shooter.getUniqueId().toString());
-        pig.setVelocity(direction.multiply(1.6));
-        new BukkitRunnable() {
-            int ticks = 0;
-
-            @Override
-            public void run() {
-                if (!pig.isValid() || pig.isDead()) {
-                    cancel();
-                    return;
-                }
-                if (pig.isOnGround() || ticks >= 60) {
-                    detonatePig(pig, shooter, data);
-                    cancel();
-                    return;
-                }
-                for (Player target : pig.getWorld().getPlayers()) {
-                    if (target.getUniqueId().equals(shooter.getUniqueId())) {
-                        continue;
-                    }
-                    if (data.getTrusted().contains(target.getUniqueId())) {
-                        continue;
-                    }
-                    if (target.getLocation().distanceSquared(pig.getLocation()) <= 1.2) {
-                        detonatePig(pig, shooter, data);
-                        cancel();
-                        return;
-                    }
-                }
-                ticks++;
+            if (!data.isPrimaryActive() || !data.isPigSparkPrimed()) {
+                return;
             }
-        }.runTaskTimer(this, 1L, 1L);
+            data.setPigSparkPrimed(false);
+            data.setPrimaryActive(false);
+            data.setPrimarySeconds(20);
+            data.setPrimaryMinutes(1);
+        }, 50L * TICKS_PER_SECOND);
     }
 
-    private void detonatePig(Pig pig, Player shooter, PlayerData data) {
-        if (!pig.isValid() || pig.isDead()) {
+    private void triggerPigSparkHeal(Player player, PlayerData data) {
+        if (!data.isPigSparkPrimed()) {
             return;
         }
-        var world = pig.getWorld();
-        var location = pig.getLocation();
-        pig.remove();
-        world.spawnParticle(Particle.EXPLOSION, location, 1);
-        world.playSound(location, Sound.ENTITY_GENERIC_EXPLODE, 1f, 1f);
-        for (Player target : world.getPlayers()) {
-            if (target.getUniqueId().equals(shooter.getUniqueId())) {
-                continue;
+        data.setPigSparkPrimed(false);
+        data.setPrimaryActive(false);
+        data.setPrimaryMinutes(1);
+        data.setPrimarySeconds(20);
+        Bukkit.getScheduler().runTask(this, () -> {
+            if (!player.isOnline() || player.isDead()) {
+                return;
             }
-            if (data.getTrusted().contains(target.getUniqueId())) {
-                continue;
-            }
-            if (target.getLocation().distanceSquared(location) <= 4.0) {
-                target.damage(4.0, shooter);
-            }
-        }
+            AttributeInstance maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+            double max = maxHealth != null ? maxHealth.getValue() : 20.0;
+            player.setHealth(Math.min(max, player.getHealth() + 10.0));
+        });
     }
 
     private void hidePlayerFromAll(Player player) {
@@ -1339,6 +1283,28 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         if (data.getPrimary() == 7 && event.getCause() == EntityDamageEvent.DamageCause.LIGHTNING) {
             event.setCancelled(true);
         }
+    }
+
+    @EventHandler
+    public void onPigSparkLowHealth(EntityDamageEvent event) {
+        if (!(event.getEntity() instanceof Player player)) {
+            return;
+        }
+        if (event.isCancelled()) {
+            return;
+        }
+        PlayerData data = getData(player);
+        if (data.getPrimary() != 9 || !data.isPrimaryActive() || !data.isPigSparkPrimed()) {
+            return;
+        }
+        double finalHealth = player.getHealth() - event.getFinalDamage();
+        if (finalHealth > 8.0) {
+            return;
+        }
+        if (finalHealth <= 0) {
+            event.setDamage(Math.max(0.0, player.getHealth() - 1.0));
+        }
+        triggerPigSparkHeal(player, data);
     }
 
     @EventHandler
