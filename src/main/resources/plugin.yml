@@ -7,7 +7,7 @@ commands:
     description: Infuse settings, abilities, and spark selection.
     usage: /<command> spark|settings|ability|trust|primary|support
   drain:
-    description: Drain the current primary or support spark.
+    description: Drain the current infuse slot.
     usage: /<command> <1|2>
 permissions:
   infuse.command.infusespark:

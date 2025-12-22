@@ -75,6 +75,9 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
     private static final UUID HEART_SPARK_MODIFIER = UUID.fromString("8f7625b1-2f43-4a28-9e1c-c5c1c4e5c169");
     private static final UUID PIG_KNOCKBACK_MODIFIER = UUID.fromString("e3a44368-b83e-49a6-a79c-0d0c5978a9c8");
 
+    private record EffectSelection(EffectGroup group, int effectId) {
+    }
+
     private final Map<UUID, PlayerData> playerData = new HashMap<>();
     private final Map<UUID, Integer> pigHitCounts = new HashMap<>();
     private final Set<UUID> heartEquipApplied = new HashSet<>();
@@ -142,6 +145,86 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
 
     public NamespacedKey getInfuseItemKey() {
         return infuseItemKey;
+    }
+
+    private int getSlotEffect(PlayerData data, int slot) {
+        return slot == 1 ? data.getPrimary() : data.getSupport();
+    }
+
+    private EffectGroup getSlotGroup(PlayerData data, int slot) {
+        return slot == 1 ? data.getPrimaryGroup() : data.getSupportGroup();
+    }
+
+    private boolean isSlotActive(PlayerData data, int slot) {
+        return slot == 1 ? data.isPrimaryActive() : data.isSupportActive();
+    }
+
+    private String getSlotShow(PlayerData data, int slot) {
+        return slot == 1 ? data.getPrimaryShow() : data.getSupportShow();
+    }
+
+    private void setSlotEffect(PlayerData data, int slot, EffectGroup group, int effectId) {
+        if (slot == 1) {
+            data.setPrimary(effectId);
+            data.setPrimaryGroup(group);
+        } else {
+            data.setSupport(effectId);
+            data.setSupportGroup(group);
+        }
+    }
+
+    private void setSlotActive(PlayerData data, int slot, boolean active) {
+        if (slot == 1) {
+            data.setPrimaryActive(active);
+        } else {
+            data.setSupportActive(active);
+        }
+    }
+
+    private void setSlotCooldown(PlayerData data, int slot, int minutes, int seconds) {
+        if (slot == 1) {
+            data.setPrimaryMinutes(minutes);
+            data.setPrimarySeconds(seconds);
+        } else {
+            data.setSupportMinutes(minutes);
+            data.setSupportSeconds(seconds);
+        }
+    }
+
+    private void setSlotSeconds(PlayerData data, int slot, int seconds) {
+        if (slot == 1) {
+            data.setPrimarySeconds(seconds);
+        } else {
+            data.setSupportSeconds(seconds);
+        }
+    }
+
+    private void setSlotMinutes(PlayerData data, int slot, int minutes) {
+        if (slot == 1) {
+            data.setPrimaryMinutes(minutes);
+        } else {
+            data.setSupportMinutes(minutes);
+        }
+    }
+
+    private boolean hasEffect(PlayerData data, EffectGroup group, int effectId) {
+        return (data.getPrimaryGroup() == group && data.getPrimary() == effectId)
+            || (data.getSupportGroup() == group && data.getSupport() == effectId);
+    }
+
+    private boolean isEffectActive(PlayerData data, EffectGroup group, int effectId) {
+        return (data.getPrimaryGroup() == group && data.getPrimary() == effectId && data.isPrimaryActive())
+            || (data.getSupportGroup() == group && data.getSupport() == effectId && data.isSupportActive());
+    }
+
+    private int getActiveSlotForEffect(PlayerData data, EffectGroup group, int effectId) {
+        if (data.getPrimaryGroup() == group && data.getPrimary() == effectId && data.isPrimaryActive()) {
+            return 1;
+        }
+        if (data.getSupportGroup() == group && data.getSupport() == effectId && data.isSupportActive()) {
+            return 2;
+        }
+        return 0;
     }
 
     private void setupResourcePack() {
@@ -269,158 +352,167 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
     }
 
     private void updateIconsAndPassives(Player player, PlayerData data) {
-        if (data.isPrimaryActive()) {
-            switch (data.getPrimary()) {
-                case 0 -> {
-                    data.setActionBarPrimary("\uE001");
-                    data.setPrimaryColorCode("&f&l");
-                }
-                case 1 -> {
-                    data.setActionBarPrimary("\uE014");
-                    data.setPrimaryColorCode("&4&l");
-                    applyStrengthEquipped(player, data);
-                }
-                case 2 -> {
-                    data.setActionBarPrimary("\uE015");
-                    data.setPrimaryColorCode("&5&l");
-                    applyHeartEquipped(player);
-                }
-                case 3 -> {
-                    data.setActionBarPrimary("\uE016");
-                    data.setPrimaryColorCode("&6&l");
-                    applyHasteEquipped(player);
-                }
-                case 4 -> {
-                    data.setActionBarPrimary("\uE017");
-                    data.setPrimaryColorCode("&5&l");
-                    applyInvisibilityEquipped(player);
-                }
-                case 5 -> {
-                    data.setActionBarPrimary("\uE018");
-                    data.setPrimaryColorCode("&2&l");
-                }
-                case 6 -> {
-                    data.setActionBarPrimary("\uE019");
-                    data.setPrimaryColorCode("&b&l");
-                    applyFrostEquipped(player);
-                }
-                case 7 -> {
-                    data.setActionBarPrimary("\uE020");
-                    data.setPrimaryColorCode("&9&l");
-                }
-                case 8 -> {
-                    data.setActionBarPrimary("\uE021");
-                    data.setPrimaryColorCode("&c&l");
-                }
-                case 9 -> {
-                    data.setActionBarPrimary("\uE027");
-                    data.setPrimaryColorCode("&d&l");
-                    applyPigEquipped(player);
-                }
-                default -> {
-                }
-            }
-        } else {
-            if (data.getPrimary() != 2 && heartEquipApplied.contains(player.getUniqueId())) {
-                removeAttributeModifier(player, Attribute.GENERIC_MAX_HEALTH, HEART_EQUIP_MODIFIER);
-                heartEquipApplied.remove(player.getUniqueId());
-            }
-            switch (data.getPrimary()) {
-                case 0 -> {
-                    data.setActionBarPrimary("\uE001");
-                    data.setPrimaryColorCode("&f&l");
-                }
-                case 1 -> {
-                    data.setActionBarPrimary("\uE002");
-                    data.setPrimaryColorCode("&f&l");
-                    applyStrengthEquipped(player, data);
-                }
-                case 2 -> {
-                    data.setActionBarPrimary("\uE003");
-                    data.setPrimaryColorCode("&f&l");
-                    applyHeartEquipped(player);
-                }
-                case 3 -> {
-                    data.setActionBarPrimary("\uE004");
-                    data.setPrimaryColorCode("&f&l");
-                    applyHasteEquipped(player);
-                }
-                case 4 -> {
-                    data.setActionBarPrimary("\uE005");
-                    data.setPrimaryColorCode("&f&l");
-                    applyInvisibilityEquipped(player);
-                }
-                case 5 -> {
-                    data.setActionBarPrimary("\uE006");
-                    data.setPrimaryColorCode("&f&l");
-                }
-                case 6 -> {
-                    data.setActionBarPrimary("\uE007");
-                    data.setPrimaryColorCode("&f&l");
-                    applyFrostEquipped(player);
-                }
-                case 7 -> {
-                    data.setActionBarPrimary("\uE008");
-                    data.setPrimaryColorCode("&f&l");
-                }
-                case 8 -> {
-                    data.setActionBarPrimary("\uE009");
-                    data.setPrimaryColorCode("&f&l");
-                }
-                case 9 -> {
-                    data.setActionBarPrimary("\uE026");
-                    data.setPrimaryColorCode("&f&l");
-                    applyPigEquipped(player);
-                }
-                default -> {
-                }
-            }
+        updateSlotIconsAndPassives(player, data, 1);
+        updateSlotIconsAndPassives(player, data, 2);
+
+        if (!hasEffect(data, EffectGroup.PRIMARY, 2) && heartEquipApplied.contains(player.getUniqueId())) {
+            removeAttributeModifier(player, Attribute.GENERIC_MAX_HEALTH, HEART_EQUIP_MODIFIER);
+            heartEquipApplied.remove(player.getUniqueId());
         }
 
-        if (data.getPrimary() != 9) {
+        if (!hasEffect(data, EffectGroup.PRIMARY, 9)) {
             pigHitCounts.remove(player.getUniqueId());
             removePigKnockback(player);
         }
+    }
 
-        if (data.isSupportActive()) {
-            switch (data.getSupport()) {
-                case 0 -> data.setActionBarSupport("\uE022&f&l");
-                case 1 -> {
-                    data.setActionBarSupport("\uE022&9&l");
-                    applyOceanEquipped(player);
+    private void updateSlotIconsAndPassives(Player player, PlayerData data, int slot) {
+        boolean active = isSlotActive(data, slot);
+        EffectGroup group = getSlotGroup(data, slot);
+        int effect = getSlotEffect(data, slot);
+
+        if (group == EffectGroup.PRIMARY) {
+            if (active) {
+                switch (effect) {
+                    case 0 -> setSlotActionBar(data, slot, "\uE001");
+                    case 1 -> {
+                        setSlotActionBar(data, slot, "\uE014");
+                        applyStrengthEquipped(player, data);
+                    }
+                    case 2 -> {
+                        setSlotActionBar(data, slot, "\uE015");
+                        applyHeartEquipped(player);
+                    }
+                    case 3 -> {
+                        setSlotActionBar(data, slot, "\uE016");
+                        applyHasteEquipped(player);
+                    }
+                    case 4 -> {
+                        setSlotActionBar(data, slot, "\uE017");
+                        applyInvisibilityEquipped(player);
+                    }
+                    case 5 -> setSlotActionBar(data, slot, "\uE018");
+                    case 6 -> {
+                        setSlotActionBar(data, slot, "\uE019");
+                        applyFrostEquipped(player);
+                    }
+                    case 7 -> setSlotActionBar(data, slot, "\uE020");
+                    case 8 -> setSlotActionBar(data, slot, "\uE021");
+                    case 9 -> {
+                        setSlotActionBar(data, slot, "\uE027");
+                        applyPigEquipped(player);
+                    }
+                    default -> {
+                    }
                 }
-                case 2 -> data.setActionBarSupport("\uE023&6&l");
-                case 3 -> {
-                    data.setActionBarSupport("\uE024&a&l");
-                    applyEmeraldEquipped(player);
+            } else {
+                switch (effect) {
+                    case 0 -> setSlotActionBar(data, slot, "\uE001");
+                    case 1 -> {
+                        setSlotActionBar(data, slot, "\uE002");
+                        applyStrengthEquipped(player, data);
+                    }
+                    case 2 -> {
+                        setSlotActionBar(data, slot, "\uE003");
+                        applyHeartEquipped(player);
+                    }
+                    case 3 -> {
+                        setSlotActionBar(data, slot, "\uE004");
+                        applyHasteEquipped(player);
+                    }
+                    case 4 -> {
+                        setSlotActionBar(data, slot, "\uE005");
+                        applyInvisibilityEquipped(player);
+                    }
+                    case 5 -> setSlotActionBar(data, slot, "\uE006");
+                    case 6 -> {
+                        setSlotActionBar(data, slot, "\uE007");
+                        applyFrostEquipped(player);
+                    }
+                    case 7 -> setSlotActionBar(data, slot, "\uE008");
+                    case 8 -> setSlotActionBar(data, slot, "\uE009");
+                    case 9 -> {
+                        setSlotActionBar(data, slot, "\uE026");
+                        applyPigEquipped(player);
+                    }
+                    default -> {
+                    }
                 }
-                case 4 -> {
-                    data.setActionBarSupport("\uE025&e&l");
-                    applySpeedEquipped(player);
-                }
-                default -> {
-                }
+            }
+
+            if (slot == 1) {
+                data.setPrimaryColorCode(getPrimaryColorCode(effect, active));
             }
         } else {
-            switch (data.getSupport()) {
-                case 0 -> data.setActionBarSupport("\uE001&f&l");
-                case 1 -> {
-                    data.setActionBarSupport("\uE010&f&l");
-                    applyOceanEquipped(player);
+            if (active) {
+                switch (effect) {
+                    case 0 -> setSlotActionBar(data, slot, "\uE022&f&l");
+                    case 1 -> {
+                        setSlotActionBar(data, slot, "\uE022&9&l");
+                        applyOceanEquipped(player);
+                    }
+                    case 2 -> setSlotActionBar(data, slot, "\uE023&6&l");
+                    case 3 -> {
+                        setSlotActionBar(data, slot, "\uE024&a&l");
+                        applyEmeraldEquipped(player);
+                    }
+                    case 4 -> {
+                        setSlotActionBar(data, slot, "\uE025&e&l");
+                        applySpeedEquipped(player);
+                    }
+                    default -> {
+                    }
                 }
-                case 2 -> data.setActionBarSupport("\uE011&f&l");
-                case 3 -> {
-                    data.setActionBarSupport("\uE012&f&l");
-                    applyEmeraldEquipped(player);
-                }
-                case 4 -> {
-                    data.setActionBarSupport("\uE013&f&l");
-                    applySpeedEquipped(player);
-                }
-                default -> {
+            } else {
+                switch (effect) {
+                    case 0 -> setSlotActionBar(data, slot, "\uE001&f&l");
+                    case 1 -> {
+                        setSlotActionBar(data, slot, "\uE010&f&l");
+                        applyOceanEquipped(player);
+                    }
+                    case 2 -> setSlotActionBar(data, slot, "\uE011&f&l");
+                    case 3 -> {
+                        setSlotActionBar(data, slot, "\uE012&f&l");
+                        applyEmeraldEquipped(player);
+                    }
+                    case 4 -> {
+                        setSlotActionBar(data, slot, "\uE013&f&l");
+                        applySpeedEquipped(player);
+                    }
+                    default -> {
+                    }
                 }
             }
+            if (slot == 1) {
+                data.setPrimaryColorCode("&f&l");
+            }
         }
+    }
+
+    private void setSlotActionBar(PlayerData data, int slot, String value) {
+        if (slot == 1) {
+            data.setActionBarPrimary(value);
+        } else {
+            data.setActionBarSupport(value);
+        }
+    }
+
+    private String getPrimaryColorCode(int effect, boolean active) {
+        if (!active) {
+            return "&f&l";
+        }
+        return switch (effect) {
+            case 1 -> "&4&l";
+            case 2 -> "&5&l";
+            case 3 -> "&6&l";
+            case 4 -> "&5&l";
+            case 5 -> "&2&l";
+            case 6 -> "&b&l";
+            case 7 -> "&9&l";
+            case 8 -> "&c&l";
+            case 9 -> "&d&l";
+            default -> "&f&l";
+        };
     }
 
     private void applyStrengthEquipped(Player player, PlayerData data) {
@@ -567,11 +659,11 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             return true;
         }
         if (args.length >= 1 && args[0].equalsIgnoreCase("primary")) {
-            runPrimaryAbility(player, data);
+            runSlotAbility(player, data, 1);
             return true;
         }
         if (args.length >= 1 && args[0].equalsIgnoreCase("support")) {
-            runSupportAbility(player, data);
+            runSlotAbility(player, data, 2);
             return true;
         }
         if (args.length >= 1 && args[0].equalsIgnoreCase("temp")) {
@@ -580,9 +672,9 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         if (args.length >= 1 && args[0].equalsIgnoreCase("ability")) {
             if (args.length >= 2) {
                 if (args[1].equalsIgnoreCase("primary")) {
-                    runPrimaryAbility(player, data);
+                    runSlotAbility(player, data, 1);
                 } else if (args[1].equalsIgnoreCase("support")) {
-                    runSupportAbility(player, data);
+                    runSlotAbility(player, data, 2);
                 }
             }
             return true;
@@ -600,13 +692,12 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             return true;
         }
         if (args.length >= 2 && args[1].equalsIgnoreCase("equip")) {
-            if (args.length >= 4) {
-                String category = args[2].toLowerCase(Locale.ROOT);
+            if (args.length >= 5 && args[2].equalsIgnoreCase("effect")) {
                 String type = args[3].toLowerCase(Locale.ROOT);
-                if (category.equals("primary")) {
-                    data.setPrimary(parsePrimaryType(type));
-                } else if (category.equals("support")) {
-                    data.setSupport(parseSupportType(type));
+                int slot = parseSlot(args[4]);
+                if (slot != 0) {
+                    EffectSelection selection = parseEffectType(type);
+                    setSlotEffect(data, slot, selection.group, selection.effectId);
                 }
             }
             return true;
@@ -623,29 +714,32 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         return true;
     }
 
-    private int parsePrimaryType(String type) {
+    private EffectSelection parseEffectType(String type) {
         return switch (type) {
-            case "empty" -> 0;
-            case "strength" -> 1;
-            case "heart" -> 2;
-            case "haste" -> 3;
-            case "invisibility" -> 4;
-            case "feather" -> 5;
-            case "frost" -> 6;
-            case "thunder" -> 7;
-            case "regeneration" -> 8;
-            case "pig" -> 9;
-            default -> 0;
+            case "strength" -> new EffectSelection(EffectGroup.PRIMARY, 1);
+            case "heart" -> new EffectSelection(EffectGroup.PRIMARY, 2);
+            case "haste" -> new EffectSelection(EffectGroup.PRIMARY, 3);
+            case "invisibility" -> new EffectSelection(EffectGroup.PRIMARY, 4);
+            case "feather" -> new EffectSelection(EffectGroup.PRIMARY, 5);
+            case "frost" -> new EffectSelection(EffectGroup.PRIMARY, 6);
+            case "thunder" -> new EffectSelection(EffectGroup.PRIMARY, 7);
+            case "regeneration" -> new EffectSelection(EffectGroup.PRIMARY, 8);
+            case "pig" -> new EffectSelection(EffectGroup.PRIMARY, 9);
+            case "ocean" -> new EffectSelection(EffectGroup.SUPPORT, 1);
+            case "fire" -> new EffectSelection(EffectGroup.SUPPORT, 2);
+            case "emerald" -> new EffectSelection(EffectGroup.SUPPORT, 3);
+            case "speed" -> new EffectSelection(EffectGroup.SUPPORT, 4);
+            default -> new EffectSelection(EffectGroup.PRIMARY, 0);
         };
     }
 
-    private int parseSupportType(String type) {
-        return switch (type) {
-            case "empty" -> 0;
-            case "ocean" -> 1;
-            case "fire" -> 2;
-            case "emerald" -> 3;
-            case "speed" -> 4;
+    private int parseSlot(String slotInput) {
+        if (slotInput == null) {
+            return 0;
+        }
+        return switch (slotInput) {
+            case "1" -> 1;
+            case "2" -> 2;
             default -> 0;
         };
     }
@@ -699,24 +793,29 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         if (!(sender instanceof Player player)) {
             return true;
         }
+        PlayerData data = getData(player);
         if (args.length < 1) {
-            return true;
+            int slot = data.getNextDrainSlot();
+            boolean result = handleSlotDrain(player, slot);
+            data.setNextDrainSlot(slot == 1 ? 2 : 1);
+            return result;
         }
         if (args[0].equals("1")) {
-            return handlePrimaryDrain(player);
+            return handleSlotDrain(player, 1);
         }
         if (args[0].equals("2")) {
-            return handleSupportDrain(player);
+            return handleSlotDrain(player, 2);
         }
         return true;
     }
 
-    private boolean handlePrimaryDrain(Player player) {
+    private boolean handleSlotDrain(Player player, int slot) {
         PlayerData data = getData(player);
-        if (READY_SPACES.equals(data.getPrimaryShow())) {
-            if (data.getPrimary() != 0) {
-                givePrimaryItem(player, data.getPrimary());
-                data.setPrimary(0);
+        if (READY_SPACES.equals(getSlotShow(data, slot))) {
+            int effect = getSlotEffect(data, slot);
+            if (effect != 0) {
+                giveEffectItem(player, getSlotGroup(data, slot), effect);
+                setSlotEffect(data, slot, getSlotGroup(data, slot), 0);
             }
         } else {
             player.sendMessage(ChatColor.LIGHT_PURPLE + "" + ChatColor.BOLD + "INFUSE " + ChatColor.GRAY + "" + ChatColor.BOLD + ">> " + ChatColor.WHITE + "Your Cooldown must be depleted to drain out");
@@ -724,64 +823,45 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         return true;
     }
 
-    private boolean handleSupportDrain(Player player) {
-        PlayerData data = getData(player);
-        if (READY_SPACES.equals(data.getSupportShow())) {
-            if (data.getSupport() != 0) {
-                giveSupportItem(player, data.getSupport());
-                data.setSupport(0);
-            }
-        } else {
-            player.sendMessage(ChatColor.LIGHT_PURPLE + "" + ChatColor.BOLD + "INFUSE " + ChatColor.GRAY + "" + ChatColor.BOLD + ">> " + ChatColor.WHITE + "Your Cooldown must be depleted to drain out");
-        }
-        return true;
-    }
-
-    private void runSupportAbility(Player player, PlayerData data) {
-        if (data.getSupport() == 0) {
+    private void runSlotAbility(Player player, PlayerData data, int slot) {
+        int effect = getSlotEffect(data, slot);
+        if (effect == 0) {
             return;
         }
-        if (!READY_SPACES.equals(data.getSupportShow())) {
+        if (!READY_SPACES.equals(getSlotShow(data, slot))) {
             return;
         }
         player.playSound(player.getLocation(), Sound.BLOCK_BEACON_POWER_SELECT, 1f, 2f);
-        switch (data.getSupport()) {
-            case 1 -> runOceanSpark(player, data);
-            case 2 -> runFireSpark(player, data);
-            case 3 -> runEmeraldSpark(player, data);
-            case 4 -> runSpeedSpark(player, data);
+        EffectGroup group = getSlotGroup(data, slot);
+        if (group == EffectGroup.SUPPORT) {
+            switch (effect) {
+                case 1 -> runOceanSpark(player, data, slot);
+                case 2 -> runFireSpark(player, data, slot);
+                case 3 -> runEmeraldSpark(player, data, slot);
+                case 4 -> runSpeedSpark(player, data, slot);
+                default -> {
+                }
+            }
+            return;
+        }
+        switch (effect) {
+            case 1 -> runStrengthSpark(player, data, slot);
+            case 2 -> runHeartSpark(player, data, slot);
+            case 3 -> runHasteSpark(player, data, slot);
+            case 4 -> runInvisibilitySpark(player, data, slot);
+            case 5 -> runFeatherSpark(player, data, slot);
+            case 6 -> runFrostSpark(player, data, slot);
+            case 7 -> runThunderSpark(player, data, slot);
+            case 8 -> runRegenerationSpark(player, data, slot);
+            case 9 -> runPigSpark(player, data, slot);
             default -> {
             }
         }
     }
 
-    private void runPrimaryAbility(Player player, PlayerData data) {
-        if (data.getPrimary() == 0) {
-            return;
-        }
-        if (!READY_SPACES.equals(data.getPrimaryShow())) {
-            return;
-        }
-        player.playSound(player.getLocation(), Sound.BLOCK_BEACON_POWER_SELECT, 1f, 2f);
-        switch (data.getPrimary()) {
-            case 1 -> runStrengthSpark(player, data);
-            case 2 -> runHeartSpark(player, data);
-            case 3 -> runHasteSpark(player, data);
-            case 4 -> runInvisibilitySpark(player, data);
-            case 5 -> runFeatherSpark(player, data);
-            case 6 -> runFrostSpark(player, data);
-            case 7 -> runThunderSpark(player, data);
-            case 8 -> runRegenerationSpark(player, data);
-            case 9 -> runPigSpark(player, data);
-            default -> {
-            }
-        }
-    }
-
-    private void runOceanSpark(Player player, PlayerData data) {
-        data.setSupportActive(true);
-        data.setSupportSeconds(30);
-        data.setSupportMinutes(0);
+    private void runOceanSpark(Player player, PlayerData data, int slot) {
+        setSlotActive(data, slot, true);
+        setSlotCooldown(data, slot, 0, 30);
         new BukkitRunnable() {
             int count = 0;
 
@@ -796,132 +876,112 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
                 }
                 count++;
                 if (count >= 60) {
-                    data.setSupportActive(false);
-                    data.setSupportSeconds(0);
-                    data.setSupportMinutes(1);
+                    setSlotActive(data, slot, false);
+                    setSlotCooldown(data, slot, 1, 0);
                     cancel();
                 }
             }
         }.runTaskTimer(this, 0L, 10L);
     }
 
-    private void runFireSpark(Player player, PlayerData data) {
-        data.setSupportActive(true);
-        data.setSupportSeconds(30);
-        data.setSupportMinutes(0);
+    private void runFireSpark(Player player, PlayerData data, int slot) {
+        setSlotActive(data, slot, true);
+        setSlotCooldown(data, slot, 0, 30);
         data.setFireSparkActive(true);
         Bukkit.getScheduler().runTaskLater(this, () -> {
             data.setFireSparkActive(false);
-            data.setSupportActive(false);
-            data.setSupportSeconds(0);
-            data.setSupportMinutes(1);
+            setSlotActive(data, slot, false);
+            setSlotCooldown(data, slot, 1, 0);
         }, 30L * TICKS_PER_SECOND);
     }
 
-    private void runEmeraldSpark(Player player, PlayerData data) {
-        data.setSupportActive(true);
-        data.setSupportSeconds(30);
-        data.setSupportMinutes(1);
+    private void runEmeraldSpark(Player player, PlayerData data, int slot) {
+        setSlotActive(data, slot, true);
+        setSlotCooldown(data, slot, 1, 30);
         applyPotion(player, PotionEffectType.HERO_OF_THE_VILLAGE, 200, 90, false, false);
         Bukkit.getScheduler().runTaskLater(this, () -> {
-            data.setSupportActive(false);
-            data.setSupportSeconds(0);
-            data.setSupportMinutes(5);
+            setSlotActive(data, slot, false);
+            setSlotCooldown(data, slot, 5, 0);
         }, 90L * TICKS_PER_SECOND);
     }
 
-    private void runSpeedSpark(Player player, PlayerData data) {
-        data.setSupportActive(true);
-        data.setSupportSeconds(1);
-        data.setSupportMinutes(0);
+    private void runSpeedSpark(Player player, PlayerData data, int slot) {
+        setSlotActive(data, slot, true);
+        setSlotCooldown(data, slot, 0, 1);
         Vector direction = player.getLocation().getDirection().normalize().multiply(2);
         player.setVelocity(direction);
         Bukkit.getScheduler().runTaskLater(this, () -> {
-            data.setSupportActive(false);
-            data.setSupportSeconds(15);
-            data.setSupportMinutes(0);
+            setSlotActive(data, slot, false);
+            setSlotCooldown(data, slot, 0, 15);
         }, TICKS_PER_SECOND);
     }
 
-    private void runStrengthSpark(Player player, PlayerData data) {
-        data.setPrimaryActive(true);
-        data.setPrimarySeconds(30);
-        data.setPrimaryMinutes(0);
+    private void runStrengthSpark(Player player, PlayerData data, int slot) {
+        setSlotActive(data, slot, true);
+        setSlotCooldown(data, slot, 0, 30);
         data.setStrengthSparkActive(true);
         Bukkit.getScheduler().runTaskLater(this, () -> {
             data.setStrengthSparkActive(false);
-            data.setPrimaryActive(false);
-            data.setPrimarySeconds(0);
-            data.setPrimaryMinutes(2);
+            setSlotActive(data, slot, false);
+            setSlotCooldown(data, slot, 2, 0);
         }, 30L * TICKS_PER_SECOND);
     }
 
-    private void runHeartSpark(Player player, PlayerData data) {
-        data.setPrimaryActive(true);
-        data.setPrimarySeconds(30);
-        data.setPrimaryMinutes(0);
+    private void runHeartSpark(Player player, PlayerData data, int slot) {
+        setSlotActive(data, slot, true);
+        setSlotCooldown(data, slot, 0, 30);
         applyAttributeModifier(player, Attribute.GENERIC_MAX_HEALTH, HEART_SPARK_MODIFIER, 10.0);
         Bukkit.getScheduler().runTaskLater(this, () -> {
             removeAttributeModifier(player, Attribute.GENERIC_MAX_HEALTH, HEART_SPARK_MODIFIER);
-            data.setPrimaryActive(false);
-            data.setPrimarySeconds(0);
-            data.setPrimaryMinutes(1);
+            setSlotActive(data, slot, false);
+            setSlotCooldown(data, slot, 1, 0);
         }, 30L * TICKS_PER_SECOND);
     }
 
-    private void runHasteSpark(Player player, PlayerData data) {
-        data.setPrimaryActive(true);
-        data.setPrimarySeconds(45);
-        data.setPrimaryMinutes(0);
+    private void runHasteSpark(Player player, PlayerData data, int slot) {
+        setSlotActive(data, slot, true);
+        setSlotCooldown(data, slot, 0, 45);
         applyPotion(player, PotionEffectType.HASTE, 255, 45, false, false);
         Bukkit.getScheduler().runTaskLater(this, () -> {
-            data.setPrimaryActive(false);
-            data.setPrimarySeconds(15);
-            data.setPrimaryMinutes(1);
+            setSlotActive(data, slot, false);
+            setSlotCooldown(data, slot, 1, 15);
         }, 45L * TICKS_PER_SECOND);
     }
 
-    private void runInvisibilitySpark(Player player, PlayerData data) {
-        data.setPrimaryActive(true);
-        data.setPrimarySeconds(20);
-        data.setPrimaryMinutes(0);
+    private void runInvisibilitySpark(Player player, PlayerData data, int slot) {
+        setSlotActive(data, slot, true);
+        setSlotCooldown(data, slot, 0, 20);
         hidePlayerFromAll(player);
         Bukkit.getScheduler().runTaskLater(this, () -> {
             revealPlayerToAll(player);
-            data.setPrimaryActive(false);
-            data.setPrimarySeconds(45);
-            data.setPrimaryMinutes(0);
+            setSlotActive(data, slot, false);
+            setSlotCooldown(data, slot, 0, 45);
         }, 20L * TICKS_PER_SECOND);
     }
 
-    private void runFeatherSpark(Player player, PlayerData data) {
-        data.setPrimaryActive(true);
-        data.setPrimarySeconds(2);
-        data.setPrimaryMinutes(0);
+    private void runFeatherSpark(Player player, PlayerData data, int slot) {
+        setSlotActive(data, slot, true);
+        setSlotCooldown(data, slot, 0, 2);
         applyPotion(player, PotionEffectType.LEVITATION, 30, 2, false, false);
         Bukkit.getScheduler().runTaskLater(this, () -> {
-            data.setPrimaryActive(false);
-            data.setPrimarySeconds(30);
-            data.setPrimaryMinutes(0);
+            setSlotActive(data, slot, false);
+            setSlotCooldown(data, slot, 0, 30);
         }, 2L * TICKS_PER_SECOND);
     }
 
-    private void runFrostSpark(Player player, PlayerData data) {
-        data.setPrimaryActive(true);
-        data.setPrimarySeconds(30);
-        data.setPrimaryMinutes(0);
+    private void runFrostSpark(Player player, PlayerData data, int slot) {
+        setSlotActive(data, slot, true);
+        setSlotCooldown(data, slot, 0, 30);
         data.setFrostSparkActive(true);
         Bukkit.getScheduler().runTaskLater(this, () -> {
-            data.setPrimaryActive(false);
-            data.setPrimarySeconds(0);
-            data.setPrimaryMinutes(1);
+            setSlotActive(data, slot, false);
+            setSlotCooldown(data, slot, 1, 0);
         }, 30L * TICKS_PER_SECOND);
     }
 
-    private void runThunderSpark(Player player, PlayerData data) {
-        data.setPrimaryActive(true);
-        data.setPrimarySeconds(10);
-        data.setPrimaryMinutes(0);
+    private void runThunderSpark(Player player, PlayerData data, int slot) {
+        setSlotActive(data, slot, true);
+        setSlotCooldown(data, slot, 0, 10);
         new BukkitRunnable() {
             int count = 0;
 
@@ -942,19 +1002,17 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
                 }
                 count++;
                 if (count >= 10) {
-                    data.setPrimaryActive(false);
-                    data.setPrimarySeconds(20);
-                    data.setPrimaryMinutes(1);
+                    setSlotActive(data, slot, false);
+                    setSlotCooldown(data, slot, 1, 20);
                     cancel();
                 }
             }
         }.runTaskTimer(this, 0L, TICKS_PER_SECOND);
     }
 
-    private void runRegenerationSpark(Player player, PlayerData data) {
-        data.setPrimaryActive(true);
-        data.setPrimarySeconds(15);
-        data.setPrimaryMinutes(0);
+    private void runRegenerationSpark(Player player, PlayerData data, int slot) {
+        setSlotActive(data, slot, true);
+        setSlotCooldown(data, slot, 0, 15);
         new BukkitRunnable() {
             int count = 0;
 
@@ -975,40 +1033,36 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
                 }
                 count++;
                 if (count >= 15) {
-                    data.setPrimaryActive(false);
-                    data.setPrimarySeconds(20);
-                    data.setPrimaryMinutes(1);
+                    setSlotActive(data, slot, false);
+                    setSlotCooldown(data, slot, 1, 20);
                     cancel();
                 }
             }
         }.runTaskTimer(this, 0L, TICKS_PER_SECOND);
     }
 
-    private void runPigSpark(Player player, PlayerData data) {
-        data.setPrimaryActive(true);
-        data.setPrimarySeconds(50);
-        data.setPrimaryMinutes(0);
+    private void runPigSpark(Player player, PlayerData data, int slot) {
+        setSlotActive(data, slot, true);
+        setSlotCooldown(data, slot, 0, 50);
         data.setPigSparkPrimed(true);
         player.playSound(player.getLocation(), Sound.ENTITY_PIG_AMBIENT, 1f, 1.2f);
         Bukkit.getScheduler().runTaskLater(this, () -> {
-            if (!data.isPrimaryActive() || !data.isPigSparkPrimed()) {
+            if (!isSlotActive(data, slot) || !data.isPigSparkPrimed()) {
                 return;
             }
             data.setPigSparkPrimed(false);
-            data.setPrimaryActive(false);
-            data.setPrimarySeconds(20);
-            data.setPrimaryMinutes(1);
+            setSlotActive(data, slot, false);
+            setSlotCooldown(data, slot, 1, 20);
         }, 50L * TICKS_PER_SECOND);
     }
 
-    private void triggerPigSparkHeal(Player player, PlayerData data) {
+    private void triggerPigSparkHeal(Player player, PlayerData data, int slot) {
         if (!data.isPigSparkPrimed()) {
             return;
         }
         data.setPigSparkPrimed(false);
-        data.setPrimaryActive(false);
-        data.setPrimaryMinutes(1);
-        data.setPrimarySeconds(20);
+        setSlotActive(data, slot, false);
+        setSlotCooldown(data, slot, 1, 20);
         Bukkit.getScheduler().runTask(this, () -> {
             if (!player.isOnline() || player.isDead()) {
                 return;
@@ -1039,21 +1093,37 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         invisibilityHidden.remove(player.getUniqueId());
     }
 
-    private void giveSupportItem(Player player, int support) {
-        InfuseItem item = switch (support) {
-            case 1 -> InfuseItem.SUPPORT_OCEAN;
-            case 2 -> InfuseItem.SUPPORT_FIRE;
-            case 3 -> InfuseItem.SUPPORT_EMERALD;
-            case 4 -> InfuseItem.SUPPORT_SPEED;
-            default -> null;
-        };
+    private void giveEffectItem(Player player, EffectGroup group, int effect) {
+        InfuseItem item = getInfuseItem(group, effect);
         if (item != null) {
             player.getInventory().addItem(infuseItems.getItem(item));
         }
     }
 
-    private void givePrimaryItem(Player player, int primary) {
-        InfuseItem item = switch (primary) {
+    private void dropEffectOnDeath(Player player, PlayerData data, int slot) {
+        int effect = getSlotEffect(data, slot);
+        if (effect == 0) {
+            return;
+        }
+        InfuseItem item = getInfuseItem(getSlotGroup(data, slot), effect);
+        if (item != null) {
+            ItemStack stack = infuseItems.getItem(item);
+            player.getWorld().dropItemNaturally(player.getLocation(), stack);
+        }
+        setSlotEffect(data, slot, getSlotGroup(data, slot), 0);
+    }
+
+    private InfuseItem getInfuseItem(EffectGroup group, int effect) {
+        if (group == EffectGroup.SUPPORT) {
+            return switch (effect) {
+                case 1 -> InfuseItem.SUPPORT_OCEAN;
+                case 2 -> InfuseItem.SUPPORT_FIRE;
+                case 3 -> InfuseItem.SUPPORT_EMERALD;
+                case 4 -> InfuseItem.SUPPORT_SPEED;
+                default -> null;
+            };
+        }
+        return switch (effect) {
             case 1 -> InfuseItem.PRIMARY_STRENGTH;
             case 2 -> InfuseItem.PRIMARY_HEART;
             case 3 -> InfuseItem.PRIMARY_HASTE;
@@ -1065,9 +1135,6 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             case 9 -> InfuseItem.PRIMARY_PIG;
             default -> null;
         };
-        if (item != null) {
-            player.getInventory().addItem(infuseItems.getItem(item));
-        }
     }
 
     @EventHandler
@@ -1079,12 +1146,12 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
                 player.setResourcePack(resourcePackUrl, resourcePackHash);
             }
         }, 1L);
-        if (!data.isJoined()) {
+            if (!data.isJoined()) {
             Bukkit.getScheduler().runTaskLater(this, () -> {
                 player.sendMessage(ChatColor.LIGHT_PURPLE + "" + ChatColor.BOLD + "INFUSE " + ChatColor.GRAY
                     + "" + ChatColor.BOLD + ">> " + ChatColor.WHITE
                     + "Make sure to do \"/infuse settings control_set\" to set how you activate your abilities.");
-                data.setSupport(random.nextInt(4) + 1);
+                setSlotEffect(data, 2, EffectGroup.SUPPORT, random.nextInt(4) + 1);
                 data.setJoined(true);
             }, 5L * TICKS_PER_SECOND);
         }
@@ -1115,13 +1182,13 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         }
         Player player = event.getPlayer();
         PlayerData data = getData(player);
-        if (type.name().startsWith("PRIMARY")) {
-            givePrimaryItem(player, data.getPrimary());
-            data.setPrimary(primaryFromItem(type));
-        } else {
-            giveSupportItem(player, data.getSupport());
-            data.setSupport(supportFromItem(type));
+        EffectSelection selection = effectFromItem(type);
+        int slot = getSlotEffect(data, 1) == 0 ? 1 : (getSlotEffect(data, 2) == 0 ? 2 : 2);
+        int existingEffect = getSlotEffect(data, slot);
+        if (existingEffect != 0) {
+            giveEffectItem(player, getSlotGroup(data, slot), existingEffect);
         }
+        setSlotEffect(data, slot, selection.group, selection.effectId);
         if (player.getGameMode() != org.bukkit.GameMode.CREATIVE) {
             Bukkit.getScheduler().runTask(this, () -> player.getInventory().removeItem(new ItemStack(Material.GLASS_BOTTLE, 1)));
         } else {
@@ -1129,28 +1196,21 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         }
     }
 
-    private int primaryFromItem(InfuseItem type) {
+    private EffectSelection effectFromItem(InfuseItem type) {
         return switch (type) {
-            case PRIMARY_STRENGTH -> 1;
-            case PRIMARY_HEART -> 2;
-            case PRIMARY_HASTE -> 3;
-            case PRIMARY_INVISIBILITY -> 4;
-            case PRIMARY_FEATHER -> 5;
-            case PRIMARY_FROST -> 6;
-            case PRIMARY_THUNDER -> 7;
-            case PRIMARY_REGENERATION -> 8;
-            case PRIMARY_PIG -> 9;
-            default -> 0;
-        };
-    }
-
-    private int supportFromItem(InfuseItem type) {
-        return switch (type) {
-            case SUPPORT_OCEAN -> 1;
-            case SUPPORT_FIRE -> 2;
-            case SUPPORT_EMERALD -> 3;
-            case SUPPORT_SPEED -> 4;
-            default -> 0;
+            case PRIMARY_STRENGTH -> new EffectSelection(EffectGroup.PRIMARY, 1);
+            case PRIMARY_HEART -> new EffectSelection(EffectGroup.PRIMARY, 2);
+            case PRIMARY_HASTE -> new EffectSelection(EffectGroup.PRIMARY, 3);
+            case PRIMARY_INVISIBILITY -> new EffectSelection(EffectGroup.PRIMARY, 4);
+            case PRIMARY_FEATHER -> new EffectSelection(EffectGroup.PRIMARY, 5);
+            case PRIMARY_FROST -> new EffectSelection(EffectGroup.PRIMARY, 6);
+            case PRIMARY_THUNDER -> new EffectSelection(EffectGroup.PRIMARY, 7);
+            case PRIMARY_REGENERATION -> new EffectSelection(EffectGroup.PRIMARY, 8);
+            case PRIMARY_PIG -> new EffectSelection(EffectGroup.PRIMARY, 9);
+            case SUPPORT_OCEAN -> new EffectSelection(EffectGroup.SUPPORT, 1);
+            case SUPPORT_FIRE -> new EffectSelection(EffectGroup.SUPPORT, 2);
+            case SUPPORT_EMERALD -> new EffectSelection(EffectGroup.SUPPORT, 3);
+            case SUPPORT_SPEED -> new EffectSelection(EffectGroup.SUPPORT, 4);
         };
     }
 
@@ -1161,9 +1221,9 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         if (data.getControlSet() == 1) {
             event.setCancelled(true);
             if (player.isSneaking()) {
-                runPrimaryAbility(player, data);
+                runSlotAbility(player, data, 1);
             } else {
-                runSupportAbility(player, data);
+                runSlotAbility(player, data, 2);
             }
         }
     }
@@ -1178,9 +1238,9 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         if (data.getControlSet() == 2 && player.isSneaking()) {
             if (EnumSet.of(Action.RIGHT_CLICK_AIR, Action.RIGHT_CLICK_BLOCK).contains(event.getAction())) {
                 event.setCancelled(true);
-                runPrimaryAbility(player, data);
+                runSlotAbility(player, data, 1);
             } else if (EnumSet.of(Action.LEFT_CLICK_AIR, Action.LEFT_CLICK_BLOCK).contains(event.getAction())) {
-                runSupportAbility(player, data);
+                runSlotAbility(player, data, 2);
             }
         }
     }
@@ -1189,7 +1249,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
     public void onMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
         PlayerData data = getData(player);
-        if (data.getPrimary() == 5 && !player.isSneaking()) {
+        if (hasEffect(data, EffectGroup.PRIMARY, 5) && !player.isSneaking()) {
             Material below = player.getLocation().clone().subtract(0, 1, 0).getBlock().getType();
             Material below2 = player.getLocation().clone().subtract(0, 2, 0).getBlock().getType();
             Material below3 = player.getLocation().clone().subtract(0, 3, 0).getBlock().getType();
@@ -1261,7 +1321,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             return;
         }
         PlayerData data = getData(player);
-        if (data.getPrimary() == 5 && event.getCause() == EntityDamageEvent.DamageCause.FALL) {
+        if (hasEffect(data, EffectGroup.PRIMARY, 5) && event.getCause() == EntityDamageEvent.DamageCause.FALL) {
             event.setCancelled(true);
         }
     }
@@ -1272,7 +1332,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             return;
         }
         PlayerData data = getData(player);
-        if (data.getSupport() == 2 && player.getFireTicks() > 0) {
+        if (hasEffect(data, EffectGroup.SUPPORT, 2) && player.getFireTicks() > 0) {
             event.setCancelled(true);
             if (data.isFireSparkActive()) {
                 applyPotion(player, PotionEffectType.REGENERATION, 1, 2, false, false);
@@ -1280,7 +1340,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             applyTemporaryAttributeModifier(player, Attribute.GENERIC_ATTACK_DAMAGE, FIRE_ATTACK_MODIFIER, FIRE_ATTACK_DAMAGE, 20);
             applyPotion(player, PotionEffectType.FIRE_RESISTANCE, 1, 1, false, true);
         }
-        if (data.getPrimary() == 7 && event.getCause() == EntityDamageEvent.DamageCause.LIGHTNING) {
+        if (hasEffect(data, EffectGroup.PRIMARY, 7) && event.getCause() == EntityDamageEvent.DamageCause.LIGHTNING) {
             event.setCancelled(true);
         }
     }
@@ -1294,7 +1354,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             return;
         }
         PlayerData data = getData(player);
-        if (data.getPrimary() != 9 || !data.isPrimaryActive() || !data.isPigSparkPrimed()) {
+        if (!hasEffect(data, EffectGroup.PRIMARY, 9) || !isEffectActive(data, EffectGroup.PRIMARY, 9) || !data.isPigSparkPrimed()) {
             return;
         }
         double finalHealth = player.getHealth() - event.getFinalDamage();
@@ -1304,7 +1364,11 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         if (finalHealth <= 0) {
             event.setDamage(Math.max(0.0, player.getHealth() - 1.0));
         }
-        triggerPigSparkHeal(player, data);
+        int slot = getActiveSlotForEffect(data, EffectGroup.PRIMARY, 9);
+        if (slot == 0) {
+            return;
+        }
+        triggerPigSparkHeal(player, data, slot);
     }
 
     @EventHandler
@@ -1313,16 +1377,16 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             return;
         }
         PlayerData data = getData(player);
-        if (data.getPrimary() == 6 && data.isFrostSparkActive() && event.getEntity() instanceof LivingEntity victim) {
+        if (hasEffect(data, EffectGroup.PRIMARY, 6) && data.isFrostSparkActive() && event.getEntity() instanceof LivingEntity victim) {
             if (victim.getFreezeTicks() >= TICKS_PER_SECOND) {
                 event.setDamage(event.getDamage() + 3);
             }
             victim.setFreezeTicks(TICKS_PER_SECOND * 30);
         }
-        if (data.getPrimary() == 7 && event.isCritical()) {
+        if (hasEffect(data, EffectGroup.PRIMARY, 7) && event.isCritical()) {
             Bukkit.getScheduler().runTask(this, () -> event.getEntity().getWorld().strikeLightning(event.getEntity().getLocation()));
         }
-        if (data.getPrimary() == 8 && event.isCritical()) {
+        if (hasEffect(data, EffectGroup.PRIMARY, 8) && event.isCritical()) {
             applyPotion(player, PotionEffectType.REGENERATION, 2, 4, false, false);
         }
     }
@@ -1336,7 +1400,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             return;
         }
         PlayerData data = getData(player);
-        if (data.getPrimary() != 9) {
+        if (!hasEffect(data, EffectGroup.PRIMARY, 9)) {
             return;
         }
         int hits = pigHitCounts.getOrDefault(player.getUniqueId(), 0) + 1;
@@ -1352,7 +1416,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
     public void onBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
         PlayerData data = getData(player);
-        if (data.getPrimary() != 3) {
+        if (!hasEffect(data, EffectGroup.PRIMARY, 3)) {
             return;
         }
         Material type = event.getBlock().getType();
@@ -1387,33 +1451,8 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             return;
         }
         PlayerData data = getData(player);
-        if (data.getSupport() != 0) {
-            ItemStack supportItem = infuseItems.getItem(switch (data.getSupport()) {
-                case 1 -> InfuseItem.SUPPORT_OCEAN;
-                case 2 -> InfuseItem.SUPPORT_FIRE;
-                case 3 -> InfuseItem.SUPPORT_EMERALD;
-                case 4 -> InfuseItem.SUPPORT_SPEED;
-                default -> InfuseItem.SUPPORT_OCEAN;
-            });
-            player.getWorld().dropItemNaturally(player.getLocation(), supportItem);
-            data.setSupport(0);
-        }
-        if (data.getPrimary() != 0) {
-            ItemStack primaryItem = infuseItems.getItem(switch (data.getPrimary()) {
-                case 1 -> InfuseItem.PRIMARY_STRENGTH;
-                case 2 -> InfuseItem.PRIMARY_HEART;
-                case 3 -> InfuseItem.PRIMARY_HASTE;
-                case 4 -> InfuseItem.PRIMARY_INVISIBILITY;
-                case 5 -> InfuseItem.PRIMARY_FEATHER;
-                case 6 -> InfuseItem.PRIMARY_FROST;
-                case 7 -> InfuseItem.PRIMARY_THUNDER;
-                case 8 -> InfuseItem.PRIMARY_REGENERATION;
-                case 9 -> InfuseItem.PRIMARY_PIG;
-                default -> InfuseItem.PRIMARY_STRENGTH;
-            });
-            player.getWorld().dropItemNaturally(player.getLocation(), primaryItem);
-            data.setPrimary(0);
-        }
+        dropEffectOnDeath(player, data, 2);
+        dropEffectOnDeath(player, data, 1);
     }
 
     @Override
@@ -1432,14 +1471,17 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
                 return List.of("equip", "cd_reset");
             }
             if (args.length == 3 && args[0].equalsIgnoreCase("spark") && args[1].equalsIgnoreCase("equip")) {
-                return List.of("primary", "support");
+                return List.of("effect");
             }
             if (args.length == 4 && args[0].equalsIgnoreCase("spark") && args[1].equalsIgnoreCase("equip")) {
-                if (args[2].equalsIgnoreCase("primary")) {
-                    return List.of("empty", "strength", "heart", "haste", "invisibility", "feather", "frost", "thunder", "regeneration", "pig");
+                if (args[2].equalsIgnoreCase("effect")) {
+                    return List.of("empty", "strength", "heart", "haste", "invisibility", "feather", "frost", "thunder", "regeneration",
+                        "pig", "ocean", "fire", "emerald", "speed");
                 }
-                if (args[2].equalsIgnoreCase("support")) {
-                    return List.of("empty", "ocean", "fire", "emerald", "speed");
+            }
+            if (args.length == 5 && args[0].equalsIgnoreCase("spark") && args[1].equalsIgnoreCase("equip")) {
+                if (args[2].equalsIgnoreCase("effect")) {
+                    return List.of("1", "2");
                 }
             }
             if (args.length == 3 && args[0].equalsIgnoreCase("spark") && args[1].equalsIgnoreCase("cd_reset")) {
