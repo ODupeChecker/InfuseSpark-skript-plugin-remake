@@ -231,6 +231,18 @@ infuses:
       sound-volume: 1.0
       sound-pitch: 1.0
       particle-count: 20
+  overdrive:
+    passive:
+      action-bar-active: "\uE031"
+      action-bar-inactive: "\uE030"
+      primary-color-active: "&6&l"
+      primary-color-inactive: "&f&l"
+    spark:
+      cooldown-start-minutes: 0
+      cooldown-start-seconds: 10
+      duration-seconds: 10
+      cooldown-end-minutes: 0
+      cooldown-end-seconds: 30
   ocean:
     passive:
       action-bar-active: "\uE022&9&l"
