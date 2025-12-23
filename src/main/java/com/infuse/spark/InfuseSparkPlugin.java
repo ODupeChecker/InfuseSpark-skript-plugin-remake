@@ -403,7 +403,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
                     }
                     case 7 -> setSlotActionBar(data, slot, "\uE020");
                     case 8 -> setSlotActionBar(data, slot, "\uE021");
-                    case 9 -> setSlotActionBar(data, slot, "\uE027");
+                    case 9 -> setSlotActionBar(data, slot, "\uE029");
                     default -> {
                     }
                 }
@@ -433,7 +433,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
                     }
                     case 7 -> setSlotActionBar(data, slot, "\uE008");
                     case 8 -> setSlotActionBar(data, slot, "\uE009");
-                    case 9 -> setSlotActionBar(data, slot, "\uE026");
+                    case 9 -> setSlotActionBar(data, slot, "\uE028");
                     default -> {
                     }
                 }
