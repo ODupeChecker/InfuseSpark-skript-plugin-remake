@@ -39,8 +39,8 @@ To show The Piglin Effect icon on the action bar, update the resource pack:
    - `piglinspark.png` (active icon)
 
 Use the same format as the other abilities, but assign The Piglin Effect glyphs to the next available codes:
-- `\uE028` for `piglin.png`
-- `\uE029` for `piglinspark.png`
+- `\uE026` for `piglin.png`
+- `\uE027` for `piglinspark.png`
 
 Configure `config.yml`:
 ```yaml
