@@ -96,7 +96,7 @@ public class StrengthInfuse extends BaseInfuse {
             return;
         }
         if (!critical) {
-            event.setCritical(true);
+            event.setDamage(event.getDamage() * 1.5);
             player.getWorld().spawnParticle(Particle.CRIT, event.getEntity().getLocation().add(0.0, 1.0, 0.0),
                 12, 0.2, 0.2, 0.2, 0.0);
             player.getWorld().playSound(event.getEntity().getLocation(), Sound.ENTITY_PLAYER_ATTACK_CRIT, 1.0f, 1.0f);
