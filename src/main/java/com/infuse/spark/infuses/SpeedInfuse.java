@@ -1,11 +1,9 @@
 package com.infuse.spark.infuses;
 
 import com.infuse.spark.EffectGroup;
-import com.infuse.spark.InfuseConstants;
 import com.infuse.spark.InfuseItems.InfuseItem;
 import com.infuse.spark.PlayerData;
 import com.infuse.spark.SlotHelper;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
@@ -17,19 +15,31 @@ public class SpeedInfuse extends BaseInfuse {
 
     @Override
     public void updateSlot(Player player, PlayerData data, int slot, boolean active, InfuseContext context) {
-        SlotHelper.setSlotActionBar(data, slot, active ? "\uE025&e&l" : "\uE013&f&l");
-        context.applyPotion(player, PotionEffectType.SPEED, 2, 2, false, false);
+        String activeIcon = getString(context, PASSIVE_SECTION, "action-bar-active", "");
+        String inactiveIcon = getString(context, PASSIVE_SECTION, "action-bar-inactive", "");
+        SlotHelper.setSlotActionBar(data, slot, active ? activeIcon : inactiveIcon);
+        int level = getInt(context, PASSIVE_SECTION, "potion-level", 0);
+        int durationSeconds = getInt(context, PASSIVE_SECTION, "potion-duration-seconds", 0);
+        boolean particles = getBoolean(context, PASSIVE_SECTION, "potion-particles", false);
+        boolean icon = getBoolean(context, PASSIVE_SECTION, "potion-icon", false);
+        context.applyPotion(player, PotionEffectType.SPEED, level, durationSeconds, particles, icon);
     }
 
     @Override
     public void activate(Player player, PlayerData data, int slot, InfuseContext context) {
         SlotHelper.setSlotActive(data, slot, true);
-        SlotHelper.setSlotCooldown(data, slot, 0, 1);
-        Vector direction = player.getLocation().getDirection().normalize().multiply(2);
+        int startMinutes = getInt(context, SPARK_SECTION, "cooldown-start-minutes", 0);
+        int startSeconds = getInt(context, SPARK_SECTION, "cooldown-start-seconds", 0);
+        SlotHelper.setSlotCooldown(data, slot, startMinutes, startSeconds);
+        double speedMultiplier = getDouble(context, SPARK_SECTION, "velocity-multiplier", 0.0);
+        Vector direction = player.getLocation().getDirection().normalize().multiply(speedMultiplier);
         player.setVelocity(direction);
-        Bukkit.getScheduler().runTaskLater(context.getPlugin(), () -> {
+        int endMinutes = getInt(context, SPARK_SECTION, "cooldown-end-minutes", 0);
+        int endSeconds = getInt(context, SPARK_SECTION, "cooldown-end-seconds", 0);
+        int durationSeconds = getInt(context, SPARK_SECTION, "duration-seconds", 0);
+        context.getPlugin().getServer().getScheduler().runTaskLater(context.getPlugin(), () -> {
             SlotHelper.setSlotActive(data, slot, false);
-            SlotHelper.setSlotCooldown(data, slot, 0, 15);
-        }, InfuseConstants.TICKS_PER_SECOND);
+            SlotHelper.setSlotCooldown(data, slot, endMinutes, endSeconds);
+        }, (long) durationSeconds * context.ticksPerSecond());
     }
 }

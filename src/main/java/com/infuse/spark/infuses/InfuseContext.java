@@ -1,5 +1,6 @@
 package com.infuse.spark.infuses;
 
+import com.infuse.spark.InfuseConfigManager;
 import com.infuse.spark.InfuseConstants;
 import com.infuse.spark.InfuseItems;
 import java.util.UUID;
@@ -15,10 +16,12 @@ import org.bukkit.potion.PotionEffectType;
 public class InfuseContext {
     private final Plugin plugin;
     private final InfuseItems infuseItems;
+    private final InfuseConfigManager configManager;
 
-    public InfuseContext(Plugin plugin, InfuseItems infuseItems) {
+    public InfuseContext(Plugin plugin, InfuseItems infuseItems, InfuseConfigManager configManager) {
         this.plugin = plugin;
         this.infuseItems = infuseItems;
+        this.configManager = configManager;
     }
 
     public Plugin getPlugin() {
@@ -27,6 +30,10 @@ public class InfuseContext {
 
     public InfuseItems getInfuseItems() {
         return infuseItems;
+    }
+
+    public InfuseConfigManager getConfigManager() {
+        return configManager;
     }
 
     public int ticksPerSecond() {

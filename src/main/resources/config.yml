@@ -3,3 +3,289 @@ resource-pack:
   public-url: ""
   port: 8173
   path: "Infuse Pack.zip"
+infuses:
+  strength:
+    passive:
+      action-bar-active: "\uE014"
+      action-bar-inactive: "\uE002"
+      primary-color-active: "&4&l"
+      primary-color-inactive: "&f&l"
+      attack-damage: 2.0
+      refresh-ticks: 4
+    spark:
+      attack-damage: 1.5
+      refresh-ticks: 4
+      cooldown-start-minutes: 0
+      cooldown-start-seconds: 30
+      duration-seconds: 30
+      cooldown-end-minutes: 2
+      cooldown-end-seconds: 0
+  heart:
+    passive:
+      action-bar-active: "\uE015"
+      action-bar-inactive: "\uE003"
+      primary-color-active: "&5&l"
+      primary-color-inactive: "&f&l"
+      max-health: 10.0
+    spark:
+      max-health: 10.0
+      cooldown-start-minutes: 0
+      cooldown-start-seconds: 30
+      duration-seconds: 30
+      cooldown-end-minutes: 1
+      cooldown-end-seconds: 0
+  haste:
+    passive:
+      action-bar-active: "\uE016"
+      action-bar-inactive: "\uE004"
+      primary-color-active: "&6&l"
+      primary-color-inactive: "&f&l"
+      potion-level: 2
+      potion-duration-seconds: 2
+      potion-particles: false
+      potion-icon: false
+      extra-drop-materials:
+        - DIAMOND_ORE
+        - DEEPSLATE_DIAMOND_ORE
+        - COAL_ORE
+        - DEEPSLATE_COAL_ORE
+        - GOLD_ORE
+        - DEEPSLATE_GOLD_ORE
+        - IRON_ORE
+        - DEEPSLATE_IRON_ORE
+        - EMERALD_ORE
+        - DEEPSLATE_EMERALD_ORE
+        - LAPIS_ORE
+        - DEEPSLATE_LAPIS_ORE
+        - REDSTONE_ORE
+        - DEEPSLATE_REDSTONE_ORE
+        - COPPER_ORE
+        - DEEPSLATE_COPPER_ORE
+        - NETHER_GOLD_ORE
+        - NETHER_QUARTZ_ORE
+        - AMETHYST_CLUSTER
+    spark:
+      potion-level: 255
+      potion-duration-seconds: 45
+      potion-particles: false
+      potion-icon: false
+      cooldown-start-minutes: 0
+      cooldown-start-seconds: 45
+      duration-seconds: 45
+      cooldown-end-minutes: 1
+      cooldown-end-seconds: 15
+  invisibility:
+    passive:
+      action-bar-active: "\uE017"
+      action-bar-inactive: "\uE005"
+      primary-color-active: "&5&l"
+      primary-color-inactive: "&f&l"
+      potion-level: 1
+      potion-duration-seconds: 2
+      potion-particles: true
+      potion-icon: true
+    spark:
+      cooldown-start-minutes: 0
+      cooldown-start-seconds: 20
+      duration-seconds: 20
+      cooldown-end-minutes: 0
+      cooldown-end-seconds: 45
+  feather:
+    passive:
+      action-bar-active: "\uE018"
+      action-bar-inactive: "\uE006"
+      primary-color-active: "&2&l"
+      primary-color-inactive: "&f&l"
+      liquid-materials:
+        - WATER
+        - LAVA
+      liquid-check-depths:
+        - 1
+        - 2
+        - 3
+      require-head-clear: true
+      freeze-radius-xz: 2
+      freeze-radius-y: 1
+      water-replace: ICE
+      lava-replace: OBSIDIAN
+      freeze-revert-delay-seconds: 3
+      stand-check-interval-ticks: 1
+    spark:
+      potion-level: 30
+      potion-duration-seconds: 2
+      potion-particles: false
+      potion-icon: false
+      cooldown-start-minutes: 0
+      cooldown-start-seconds: 2
+      duration-seconds: 2
+      cooldown-end-minutes: 0
+      cooldown-end-seconds: 30
+  frost:
+    passive:
+      action-bar-active: "\uE019"
+      action-bar-inactive: "\uE007"
+      primary-color-active: "&b&l"
+      primary-color-inactive: "&f&l"
+      scan-radius-xz: 2
+      scan-radius-y: 1
+      ice-materials:
+        - ICE
+        - BLUE_ICE
+        - PACKED_ICE
+      snow-materials:
+        - SNOW
+        - SNOW_BLOCK
+      ice-speed-level: 10
+      ice-speed-duration-seconds: 2
+      ice-speed-particles: false
+      ice-speed-icon: false
+      snow-speed-level: 3
+      snow-speed-duration-seconds: 2
+      snow-speed-particles: false
+      snow-speed-icon: false
+    spark:
+      cooldown-start-minutes: 0
+      cooldown-start-seconds: 30
+      duration-seconds: 30
+      cooldown-end-minutes: 1
+      cooldown-end-seconds: 0
+      bonus-damage-freeze-threshold-ticks: 20
+      bonus-damage: 3.0
+      freeze-ticks: 600
+  thunder:
+    passive:
+      action-bar-active: "\uE020"
+      action-bar-inactive: "\uE008"
+      primary-color-active: "&9&l"
+      primary-color-inactive: "&f&l"
+      crit-lightning: true
+      lightning-immunity: true
+    spark:
+      cooldown-start-minutes: 0
+      cooldown-start-seconds: 10
+      lightning-radius: 16
+      strike-count: 10
+      cooldown-end-minutes: 1
+      cooldown-end-seconds: 20
+  regeneration:
+    passive:
+      action-bar-active: "\uE021"
+      action-bar-inactive: "\uE009"
+      primary-color-active: "&c&l"
+      primary-color-inactive: "&f&l"
+      crit-potion-level: 2
+      crit-potion-duration-seconds: 4
+      crit-potion-particles: false
+      crit-potion-icon: false
+    spark:
+      cooldown-start-minutes: 0
+      cooldown-start-seconds: 15
+      tick-potion-level: 2
+      tick-potion-duration-seconds: 3
+      tick-potion-particles: false
+      tick-potion-icon: false
+      trusted-radius: 16
+      tick-count: 15
+      cooldown-end-minutes: 1
+      cooldown-end-seconds: 20
+  pig:
+    passive:
+      action-bar-active: "\uE027"
+      action-bar-inactive: "\uE026"
+      primary-color-active: "&d&l"
+      primary-color-inactive: "&f&l"
+      knockback-resistance: 0.05
+      speed-hit-threshold: 5
+      speed-level: 3
+      speed-duration-seconds: 5
+      speed-particles: false
+      speed-icon: false
+    spark:
+      cooldown-start-minutes: 0
+      cooldown-start-seconds: 50
+      duration-seconds: 50
+      cooldown-end-minutes: 1
+      cooldown-end-seconds: 20
+      sound-volume: 1.0
+      sound-pitch: 1.2
+      trigger-health: 8.0
+      leave-health: 1.0
+      heal-amount: 10.0
+  ocean:
+    passive:
+      action-bar-active: "\uE022&9&l"
+      action-bar-inactive: "\uE010&f&l"
+      dolphins-grace-level: 1
+      dolphins-grace-duration-seconds: 2
+      dolphins-grace-particles: false
+      dolphins-grace-icon: false
+      conduit-power-level: 1
+      conduit-power-duration-seconds: 2
+      conduit-power-particles: false
+      conduit-power-icon: false
+      attack-damage: 2.0
+      attack-damage-refresh-ticks: 4
+    spark:
+      cooldown-start-minutes: 0
+      cooldown-start-seconds: 30
+      tick-count: 60
+      tick-interval-ticks: 10
+      regen-level: 1
+      regen-duration-seconds: 2
+      regen-particles: false
+      regen-icon: false
+      cooldown-end-minutes: 1
+      cooldown-end-seconds: 0
+  fire:
+    passive:
+      action-bar-active: "\uE023&6&l"
+      action-bar-inactive: "\uE011&f&l"
+      attack-damage: 1.0
+      attack-damage-refresh-ticks: 20
+      fire-resistance-level: 1
+      fire-resistance-duration-seconds: 1
+      fire-resistance-particles: false
+      fire-resistance-icon: true
+    spark:
+      cooldown-start-minutes: 0
+      cooldown-start-seconds: 30
+      duration-seconds: 30
+      cooldown-end-minutes: 1
+      cooldown-end-seconds: 0
+      regen-level: 1
+      regen-duration-seconds: 2
+      regen-particles: false
+      regen-icon: false
+  emerald:
+    passive:
+      action-bar-active: "\uE024&a&l"
+      action-bar-inactive: "\uE012&f&l"
+      potion-level: 3
+      potion-duration-seconds: 2
+      potion-particles: false
+      potion-icon: false
+    spark:
+      cooldown-start-minutes: 1
+      cooldown-start-seconds: 30
+      duration-seconds: 90
+      potion-level: 200
+      potion-duration-seconds: 90
+      potion-particles: false
+      potion-icon: false
+      cooldown-end-minutes: 5
+      cooldown-end-seconds: 0
+  speed:
+    passive:
+      action-bar-active: "\uE025&e&l"
+      action-bar-inactive: "\uE013&f&l"
+      potion-level: 2
+      potion-duration-seconds: 2
+      potion-particles: false
+      potion-icon: false
+    spark:
+      cooldown-start-minutes: 0
+      cooldown-start-seconds: 1
+      duration-seconds: 1
+      velocity-multiplier: 2.0
+      cooldown-end-minutes: 0
+      cooldown-end-seconds: 15

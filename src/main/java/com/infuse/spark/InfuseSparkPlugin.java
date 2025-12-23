@@ -63,10 +63,13 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
     private String resourcePackUrl;
     private byte[] resourcePackHash;
     private InfuseRegistry infuseRegistry;
+    private InfuseConfigManager configManager;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
+        this.configManager = new InfuseConfigManager(getLogger());
+        configManager.reload(getConfig());
         this.infuseItemKey = new NamespacedKey(this, "infuse_item");
         this.infuseItems = new InfuseItems(this);
         infuseItems.registerItems();
@@ -85,7 +88,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
 
         setupResourcePack();
 
-        InfuseContext context = new InfuseContext(this, infuseItems);
+        InfuseContext context = new InfuseContext(this, infuseItems, configManager);
         this.infuseRegistry = new InfuseRegistry(context);
 
         Bukkit.getPluginManager().registerEvents(this, this);
@@ -251,6 +254,9 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
     }
 
     private boolean handleInfuseCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (args.length >= 1 && args[0].equalsIgnoreCase("reload")) {
+            return handleReload(sender);
+        }
         if (!(sender instanceof Player player)) {
             sender.sendMessage("Player only.");
             return true;
@@ -289,6 +295,22 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         if (args.length >= 1 && args[0].equalsIgnoreCase("trust")) {
             handleTrustCommand(player, data, args);
             return true;
+        }
+        return true;
+    }
+
+    private boolean handleReload(CommandSender sender) {
+        if (!sender.hasPermission("infuse.admin")) {
+            sender.sendMessage(ChatColor.RED + "You do not have permission to use this command.");
+            return true;
+        }
+        try {
+            reloadConfig();
+            configManager.reload(getConfig());
+            sender.sendMessage(ChatColor.GREEN + "Infuse configuration reloaded.");
+        } catch (Exception ex) {
+            getLogger().warning("Failed to reload config.yml: " + ex.getMessage());
+            sender.sendMessage(ChatColor.RED + "Failed to reload config.yml.");
         }
         return true;
     }
@@ -556,7 +578,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         }
         if (command.getName().equalsIgnoreCase("infuse")) {
             if (args.length == 1) {
-                return List.of("spark", "settings", "ability", "trust", "primary", "support");
+                return List.of("spark", "settings", "ability", "trust", "primary", "support", "reload");
             }
             if (args.length == 2 && args[0].equalsIgnoreCase("spark")) {
                 return List.of("equip", "cd_reset");

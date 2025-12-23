@@ -13,3 +13,6 @@ permissions:
   infuse.command.infusespark:
     description: Allows use of /infuse spark.
     default: op
+  infuse.admin:
+    description: Allows use of /infuse reload.
+    default: op

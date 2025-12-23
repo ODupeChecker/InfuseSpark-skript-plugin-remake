@@ -1,14 +1,12 @@
 package com.infuse.spark.infuses;
 
 import com.infuse.spark.EffectGroup;
-import com.infuse.spark.InfuseConstants;
 import com.infuse.spark.InfuseItems.InfuseItem;
 import com.infuse.spark.PlayerData;
 import com.infuse.spark.SlotHelper;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import org.bukkit.Bukkit;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 
@@ -23,10 +21,14 @@ public class HeartInfuse extends BaseInfuse {
 
     @Override
     public void updateSlot(Player player, PlayerData data, int slot, boolean active, InfuseContext context) {
-        SlotHelper.setSlotActionBar(data, slot, active ? "\uE015" : "\uE003");
+        String activeIcon = getString(context, PASSIVE_SECTION, "action-bar-active", "");
+        String inactiveIcon = getString(context, PASSIVE_SECTION, "action-bar-inactive", "");
+        SlotHelper.setSlotActionBar(data, slot, active ? activeIcon : inactiveIcon);
         applyHeartEquipped(player, context);
         if (slot == 1) {
-            data.setPrimaryColorCode(active ? "&5&l" : "&f&l");
+            String activeColor = getString(context, PASSIVE_SECTION, "primary-color-active", "");
+            String inactiveColor = getString(context, PASSIVE_SECTION, "primary-color-inactive", "");
+            data.setPrimaryColorCode(active ? activeColor : inactiveColor);
         }
     }
 
@@ -34,7 +36,8 @@ public class HeartInfuse extends BaseInfuse {
         if (heartEquipApplied.contains(player.getUniqueId())) {
             return;
         }
-        context.applyAttributeModifier(player, Attribute.GENERIC_MAX_HEALTH, HEART_EQUIP_MODIFIER, 10.0);
+        double equipHealth = getDouble(context, PASSIVE_SECTION, "max-health", 0.0);
+        context.applyAttributeModifier(player, Attribute.GENERIC_MAX_HEALTH, HEART_EQUIP_MODIFIER, equipHealth);
         heartEquipApplied.add(player.getUniqueId());
     }
 
@@ -49,13 +52,19 @@ public class HeartInfuse extends BaseInfuse {
     @Override
     public void activate(Player player, PlayerData data, int slot, InfuseContext context) {
         SlotHelper.setSlotActive(data, slot, true);
-        SlotHelper.setSlotCooldown(data, slot, 0, 30);
-        context.applyAttributeModifier(player, Attribute.GENERIC_MAX_HEALTH, HEART_SPARK_MODIFIER, 10.0);
-        Bukkit.getScheduler().runTaskLater(context.getPlugin(), () -> {
+        int startMinutes = getInt(context, SPARK_SECTION, "cooldown-start-minutes", 0);
+        int startSeconds = getInt(context, SPARK_SECTION, "cooldown-start-seconds", 0);
+        SlotHelper.setSlotCooldown(data, slot, startMinutes, startSeconds);
+        double sparkHealth = getDouble(context, SPARK_SECTION, "max-health", 0.0);
+        context.applyAttributeModifier(player, Attribute.GENERIC_MAX_HEALTH, HEART_SPARK_MODIFIER, sparkHealth);
+        int durationSeconds = getInt(context, SPARK_SECTION, "duration-seconds", 0);
+        int endMinutes = getInt(context, SPARK_SECTION, "cooldown-end-minutes", 0);
+        int endSeconds = getInt(context, SPARK_SECTION, "cooldown-end-seconds", 0);
+        context.getPlugin().getServer().getScheduler().runTaskLater(context.getPlugin(), () -> {
             context.removeAttributeModifier(player, Attribute.GENERIC_MAX_HEALTH, HEART_SPARK_MODIFIER);
             SlotHelper.setSlotActive(data, slot, false);
-            SlotHelper.setSlotCooldown(data, slot, 1, 0);
-        }, 30L * InfuseConstants.TICKS_PER_SECOND);
+            SlotHelper.setSlotCooldown(data, slot, endMinutes, endSeconds);
+        }, (long) durationSeconds * context.ticksPerSecond());
     }
 
     @Override
