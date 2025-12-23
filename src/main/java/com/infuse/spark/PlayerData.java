@@ -33,6 +33,7 @@ public class PlayerData {
     private boolean frostSparkActive;
     private boolean fireSparkActive;
     private boolean pigSparkPrimed;
+    private boolean piglinSparkActive;
 
     public PlayerData(UUID uuid) {
         this.uuid = uuid;
@@ -236,5 +237,13 @@ public class PlayerData {
 
     public void setPigSparkPrimed(boolean pigSparkPrimed) {
         this.pigSparkPrimed = pigSparkPrimed;
+    }
+
+    public boolean isPiglinSparkActive() {
+        return piglinSparkActive;
+    }
+
+    public void setPiglinSparkActive(boolean piglinSparkActive) {
+        this.piglinSparkActive = piglinSparkActive;
     }
 }

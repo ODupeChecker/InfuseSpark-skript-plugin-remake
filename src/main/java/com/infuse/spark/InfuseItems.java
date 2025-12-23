@@ -30,7 +30,8 @@ public class InfuseItems {
         PRIMARY_REGENERATION,
         PRIMARY_STRENGTH,
         PRIMARY_THUNDER,
-        PRIMARY_PIG
+        PRIMARY_PIG,
+        PRIMARY_PIGLIN
     }
 
     private final InfuseSparkPlugin plugin;
@@ -241,6 +242,22 @@ public class InfuseItems {
             ),
             InfuseItem.PRIMARY_PIG
         ));
+
+        items.put(InfuseItem.PRIMARY_PIGLIN, createPotion(
+            "&4&lPiglin Effect",
+            Color.fromRGB(139, 0, 0),
+            List.of(
+                "&9Effect",
+                "&7Mark attackers for 2s",
+                "&7&o+1.25 Attack Damage on marked targets",
+                "",
+                "&9Spark Ability",
+                "&7&o+1.8 Attack Damage on marked targets",
+                "",
+                "&8Duration: &330s &8Cooldown: &330s"
+            ),
+            InfuseItem.PRIMARY_PIGLIN
+        ));
     }
 
     public void registerRecipes() {
@@ -342,6 +359,14 @@ public class InfuseItems {
             new Ingredient('b', Material.GOLDEN_CARROT),
             new Ingredient('c', Material.SADDLE),
             new Ingredient('d', Material.PIGLIN_HEAD)
+        );
+
+        registerRecipe("piglin_effect", items.get(InfuseItem.PRIMARY_PIGLIN),
+            "aba", "cdc", "aba",
+            new Ingredient('a', Material.GOLD_INGOT),
+            new Ingredient('b', Material.NETHERITE_SCRAP),
+            new Ingredient('c', Material.PIGLIN_HEAD),
+            new Ingredient('d', Material.CRYING_OBSIDIAN)
         );
     }
 

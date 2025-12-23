@@ -211,6 +211,26 @@ infuses:
       trigger-health: 8.0
       leave-health: 1.0
       heal-amount: 10.0
+  piglin:
+    passive:
+      action-bar-active: "\uE029"
+      action-bar-inactive: "\uE028"
+      primary-color-active: "&4&l"
+      primary-color-inactive: "&4&l"
+      mark-window-ticks: 40
+      mark-cooldown-seconds: 4
+      bonus-damage: 1.25
+    spark:
+      cooldown-start-minutes: 0
+      cooldown-start-seconds: 30
+      duration-seconds: 30
+      cooldown-end-minutes: 1
+      cooldown-end-seconds: 0
+      mark-cooldown-seconds: 2
+      bonus-damage: 1.8
+      sound-volume: 1.0
+      sound-pitch: 1.0
+      particle-count: 20
   ocean:
     passive:
       action-bar-active: "\uE022&9&l"
