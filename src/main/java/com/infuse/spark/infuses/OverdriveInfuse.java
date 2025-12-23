@@ -105,7 +105,7 @@ public class OverdriveInfuse extends BaseInfuse {
         boolean mistime = isMistimed(damager);
         state.mirroring = true;
         try {
-            victim.damage(mirrorDamage, damager);
+            applyMirrorDamage(victim, mirrorDamage);
             applyMirrorKnockback(victim, damager, sweep, sprint);
             playMirrorSound(victim, critical, sweep, sprint, mistime);
         } finally {
@@ -176,5 +176,11 @@ public class OverdriveInfuse extends BaseInfuse {
         if (mistime) {
             victim.getWorld().playSound(victim.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_ATTACK_WEAK, 1.0f, 1.0f);
         }
+    }
+
+    private void applyMirrorDamage(Player victim, double damage) {
+        double currentHealth = victim.getHealth();
+        double newHealth = Math.max(0.0, currentHealth - damage);
+        victim.setHealth(newHealth);
     }
 }
