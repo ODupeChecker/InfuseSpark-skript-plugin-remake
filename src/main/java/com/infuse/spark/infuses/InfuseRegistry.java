@@ -28,6 +28,7 @@ public class InfuseRegistry {
     private FireInfuse fireInfuse;
     private ThunderInfuse thunderInfuse;
     private PigInfuse pigInfuse;
+    private PiglinInfuse piglinInfuse;
 
     public InfuseRegistry(InfuseContext context) {
         this.context = context;
@@ -44,6 +45,7 @@ public class InfuseRegistry {
         register(new ThunderInfuse());
         register(new RegenerationInfuse());
         register(new PigInfuse());
+        register(new PiglinInfuse());
         register(new OceanInfuse());
         register(new FireInfuse());
         register(new EmeraldInfuse());
@@ -68,6 +70,8 @@ public class InfuseRegistry {
             thunderInfuse = thunder;
         } else if (infuse instanceof PigInfuse pig) {
             pigInfuse = pig;
+        } else if (infuse instanceof PiglinInfuse piglin) {
+            piglinInfuse = piglin;
         }
     }
 
@@ -183,6 +187,9 @@ public class InfuseRegistry {
     public void onEntityDamageByVictim(EntityDamageByEntityEvent event, PlayerData data) {
         if (pigInfuse != null) {
             pigInfuse.onEntityDamageByEntity(event, data, context);
+        }
+        if (piglinInfuse != null) {
+            piglinInfuse.onEntityDamageByEntity(event, data, context);
         }
     }
 
