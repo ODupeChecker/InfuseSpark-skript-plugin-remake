@@ -227,9 +227,9 @@ public class InfuseItems {
             InfuseItem.PRIMARY_THUNDER
         ));
 
-        items.put(InfuseItem.PRIMARY_PIG, createPotion(
-            "&d&lPig Effect",
-            Color.fromRGB(255, 105, 180),
+        items.put(InfuseItem.PRIMARY_PIGLIN, createPotion(
+            "&6&lThe Piglin Effect",
+            Color.fromRGB(255, 170, 51),
             List.of(
                 "&9Effect",
                 "&7After being hit 5 times gain &oSpeed III &7for 3s",
@@ -240,7 +240,7 @@ public class InfuseItems {
                 "",
                 "&8Duration: &340s &8Cooldown: &360s"
             ),
-            InfuseItem.PRIMARY_PIG
+            InfuseItem.PRIMARY_PIGLIN
         ));
 
         items.put(InfuseItem.PRIMARY_PIGLIN, createPotion(
@@ -355,7 +355,7 @@ public class InfuseItems {
             new Ingredient('d', Material.CREEPER_HEAD)
         );
 
-        registerRecipe("pig_effect", items.get(InfuseItem.PRIMARY_PIG),
+        registerRecipe("piglin_effect", items.get(InfuseItem.PRIMARY_PIGLIN),
             "aba", "cdc", "aba",
             new Ingredient('a', Material.PORKCHOP),
             new Ingredient('b', Material.GOLDEN_CARROT),
