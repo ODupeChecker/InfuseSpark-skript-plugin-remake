@@ -603,7 +603,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         if (pigKnockbackApplied.contains(player.getUniqueId())) {
             return;
         }
-        applyAttributeModifier(player, Attribute.GENERIC_KNOCKBACK_RESISTANCE, PIG_KNOCKBACK_MODIFIER, PIG_KNOCKBACK_REDUCTION);
+        applyAttributeModifier(player, Attribute.GENERIC_KNOCKBACK_RESISTANCE, player.getUniqueId(), PIG_KNOCKBACK_REDUCTION);
         pigKnockbackApplied.add(player.getUniqueId());
     }
 
@@ -611,7 +611,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         if (!pigKnockbackApplied.contains(player.getUniqueId())) {
             return;
         }
-        removeAttributeModifier(player, Attribute.GENERIC_KNOCKBACK_RESISTANCE, PIG_KNOCKBACK_MODIFIER);
+        removeAttributeModifier(player, Attribute.GENERIC_KNOCKBACK_RESISTANCE, player.getUniqueId());
         pigKnockbackApplied.remove(player.getUniqueId());
     }
 
