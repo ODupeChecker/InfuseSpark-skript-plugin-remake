@@ -31,7 +31,8 @@ public class InfuseItems {
         PRIMARY_STRENGTH,
         PRIMARY_THUNDER,
         PRIMARY_PIG,
-        PRIMARY_PIGLIN
+        PRIMARY_PIGLIN,
+        PRIMARY_OVERDRIVE
     }
 
     private final InfuseSparkPlugin plugin;
@@ -258,6 +259,24 @@ public class InfuseItems {
             ),
             InfuseItem.PRIMARY_PIGLIN
         ));
+
+        items.put(InfuseItem.PRIMARY_OVERDRIVE, createPotion(
+            "&6Overdrive Effect",
+            Color.fromRGB(255, 140, 0),
+            List.of(
+                "&9Effect",
+                "&7Gain &o+10% Attack Speed &7per hit",
+                "&7Up to &o5 stacks",
+                "&7Stacks reset on damage or 5s inactivity",
+                "",
+                "&9Spark Ability",
+                "&7Instantly gain 5 stacks",
+                "&7Stacks unbreakable for 10s",
+                "",
+                "&8Duration: &310s &8Cooldown: &30s"
+            ),
+            InfuseItem.PRIMARY_OVERDRIVE
+        ));
     }
 
     public void registerRecipes() {
@@ -367,6 +386,14 @@ public class InfuseItems {
             new Ingredient('b', Material.NETHERITE_SCRAP),
             new Ingredient('c', Material.PIGLIN_HEAD),
             new Ingredient('d', Material.CRYING_OBSIDIAN)
+        );
+
+        registerRecipe("overdrive_effect", items.get(InfuseItem.PRIMARY_OVERDRIVE),
+            "aba", "cdc", "aba",
+            new Ingredient('a', Material.BLAZE_POWDER),
+            new Ingredient('b', Material.NETHER_STAR),
+            new Ingredient('c', Material.RABBIT_FOOT),
+            new Ingredient('d', Material.NETHERITE_INGOT)
         );
     }
 

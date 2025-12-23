@@ -29,6 +29,7 @@ public class InfuseRegistry {
     private ThunderInfuse thunderInfuse;
     private PigInfuse pigInfuse;
     private PiglinInfuse piglinInfuse;
+    private OverdriveInfuse overdriveInfuse;
 
     public InfuseRegistry(InfuseContext context) {
         this.context = context;
@@ -46,6 +47,7 @@ public class InfuseRegistry {
         register(new RegenerationInfuse());
         register(new PigInfuse());
         register(new PiglinInfuse());
+        register(new OverdriveInfuse());
         register(new OceanInfuse());
         register(new FireInfuse());
         register(new EmeraldInfuse());
@@ -72,6 +74,8 @@ public class InfuseRegistry {
             pigInfuse = pig;
         } else if (infuse instanceof PiglinInfuse piglin) {
             piglinInfuse = piglin;
+        } else if (infuse instanceof OverdriveInfuse overdrive) {
+            overdriveInfuse = overdrive;
         }
     }
 
@@ -149,9 +153,11 @@ public class InfuseRegistry {
         if (!InfuseConstants.READY_SPACES.equals(SlotHelper.getSlotShow(data, slot))) {
             return;
         }
-        player.playSound(player.getLocation(), Sound.BLOCK_BEACON_POWER_SELECT, 1f, 2f);
         EffectGroup group = SlotHelper.getSlotGroup(data, slot);
         Infuse infuse = getInfuse(group, effect);
+        if (infuse == null || !(infuse instanceof OverdriveInfuse)) {
+            player.playSound(player.getLocation(), Sound.BLOCK_BEACON_POWER_SELECT, 1f, 2f);
+        }
         if (infuse != null) {
             infuse.activate(player, data, slot, context);
         }
@@ -175,6 +181,9 @@ public class InfuseRegistry {
         }
         if (pigInfuse != null) {
             pigInfuse.onEntityDamage(event, data, context);
+        }
+        if (overdriveInfuse != null) {
+            overdriveInfuse.onEntityDamage(event, data, context);
         }
     }
 
