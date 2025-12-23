@@ -66,6 +66,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
     private static final double STRENGTH_DAMAGE_SPARK = 1.5;
     private static final double OCEAN_ATTACK_DAMAGE = 2.0;
     private static final double FIRE_ATTACK_DAMAGE = 1.0;
+    private static final double PIG_KNOCKBACK_MODIFIER = 0.4;
     private static final double PIG_KNOCKBACK_REDUCTION = 0.08;
     private static final double PIGLIN_MARK_DAMAGE = 1.5;
     private static final double PIGLIN_BLOODMARK_DAMAGE = 3.0;
@@ -90,6 +91,8 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
     private final Map<UUID, Integer> pigHitCounts = new HashMap<>();
     private final Map<UUID, Map<UUID, Long>> piglinMarks = new HashMap<>();
     private final Map<UUID, Integer> piglinGlowCounts = new HashMap<>();
+    private final Map<UUID, Long> piglinMarkWindows = new HashMap<>();
+    private final Set<UUID> pigKnockbackApplied = new HashSet<>();
     private final Set<UUID> heartEquipApplied = new HashSet<>();
     private final Set<UUID> invisibilityHidden = new HashSet<>();
     private final Random random = new Random();
@@ -776,104 +779,6 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             double max = maxHealth != null ? maxHealth.getValue() : 20.0;
             player.setHealth(Math.min(max, player.getHealth() + 8.0));
         });
-    }
-
-    private void handlePiglinMarkAttack(Player attacker, PlayerData data, EntityDamageByEntityEvent event) {
-        if (event.isCancelled()) {
-            return;
-        }
-        if (!(event.getEntity() instanceof Player target)) {
-            return;
-        }
-        if (data.getTrusted().contains(target.getUniqueId())) {
-            return;
-        }
-        UUID attackerId = attacker.getUniqueId();
-        UUID targetId = target.getUniqueId();
-        long now = System.currentTimeMillis();
-        Map<UUID, Long> marks = piglinMarks.computeIfAbsent(attackerId, id -> new HashMap<>());
-        Long markExpires = marks.get(targetId);
-        if (markExpires == null) {
-            return;
-        }
-        if (markExpires <= now) {
-            removePiglinMark(attackerId, targetId);
-            return;
-        }
-        double bonusDamage = data.isPiglinSparkActive() ? PIGLIN_BLOODMARK_DAMAGE : PIGLIN_MARK_DAMAGE;
-        event.setDamage(event.getDamage() + bonusDamage);
-        removePiglinMark(attackerId, targetId);
-    }
-
-    private void addPiglinMark(UUID attackerId, Player target, int durationSeconds) {
-        Map<UUID, Long> marks = piglinMarks.computeIfAbsent(attackerId, id -> new HashMap<>());
-        UUID targetId = target.getUniqueId();
-        if (marks.containsKey(targetId)) {
-            return;
-        }
-        long expiresAt = System.currentTimeMillis() + (durationSeconds * 1000L);
-        marks.put(targetId, expiresAt);
-        adjustPiglinGlow(targetId, 1);
-        Bukkit.getScheduler().runTaskLater(this, () -> {
-            Map<UUID, Long> current = piglinMarks.get(attackerId);
-            if (current == null) {
-                return;
-            }
-            Long currentExpires = current.get(targetId);
-            if (currentExpires != null && currentExpires <= System.currentTimeMillis()) {
-                removePiglinMark(attackerId, targetId);
-            }
-        }, durationSeconds * TICKS_PER_SECOND);
-    }
-
-    private void removePiglinMark(UUID attackerId, UUID targetId) {
-        Map<UUID, Long> marks = piglinMarks.get(attackerId);
-        if (marks == null) {
-            return;
-        }
-        if (marks.remove(targetId) != null) {
-            adjustPiglinGlow(targetId, -1);
-        }
-        if (marks.isEmpty()) {
-            piglinMarks.remove(attackerId);
-        }
-    }
-
-    private void adjustPiglinGlow(UUID targetId, int delta) {
-        int next = piglinGlowCounts.getOrDefault(targetId, 0) + delta;
-        if (next <= 0) {
-            piglinGlowCounts.remove(targetId);
-            Player target = Bukkit.getPlayer(targetId);
-            if (target != null) {
-                target.setGlowing(false);
-            }
-            return;
-        }
-        piglinGlowCounts.put(targetId, next);
-        Player target = Bukkit.getPlayer(targetId);
-        if (target != null) {
-            target.setGlowing(true);
-        }
-    }
-
-    private void clearPiglinAttackerState(UUID attackerId) {
-        Map<UUID, Long> marks = piglinMarks.remove(attackerId);
-        if (marks == null) {
-            return;
-        }
-        for (UUID targetId : marks.keySet()) {
-            adjustPiglinGlow(targetId, -1);
-        }
-    }
-
-    private void clearPiglinTargetState(UUID targetId) {
-        for (UUID attackerId : Set.copyOf(piglinMarks.keySet())) {
-            Map<UUID, Long> marks = piglinMarks.get(attackerId);
-            if (marks == null || !marks.containsKey(targetId)) {
-                continue;
-            }
-            removePiglinMark(attackerId, targetId);
-        }
     }
 
     private boolean handleInfuseCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -1676,27 +1581,6 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             return;
         }
         triggerPigSparkHeal(player, data, slot);
-    }
-
-    @EventHandler
-    public void onPiglinEffectHit(EntityDamageByEntityEvent event) {
-        if (!(event.getEntity() instanceof Player player)) {
-            return;
-        }
-        if (event.isCancelled()) {
-            return;
-        }
-        PlayerData data = getData(player);
-        if (!hasEffect(data, EffectGroup.PRIMARY, 10)) {
-            return;
-        }
-        int hits = pigHitCounts.getOrDefault(player.getUniqueId(), 0) + 1;
-        if (hits >= 5) {
-            pigHitCounts.put(player.getUniqueId(), 0);
-            applyPotion(player, PotionEffectType.SPEED, 3, 3, false, false);
-        } else {
-            pigHitCounts.put(player.getUniqueId(), hits);
-        }
     }
 
     @EventHandler
