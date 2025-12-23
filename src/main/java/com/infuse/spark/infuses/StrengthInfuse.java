@@ -1,18 +1,14 @@
 package com.infuse.spark.infuses;
 
 import com.infuse.spark.EffectGroup;
-import com.infuse.spark.InfuseConstants;
 import com.infuse.spark.InfuseItems.InfuseItem;
 import com.infuse.spark.PlayerData;
 import com.infuse.spark.SlotHelper;
 import java.util.UUID;
-import org.bukkit.Bukkit;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 
 public class StrengthInfuse extends BaseInfuse {
-    private static final double STRENGTH_DAMAGE_BASE = 2.0;
-    private static final double STRENGTH_DAMAGE_SPARK = 1.5;
     private static final UUID STRENGTH_MODIFIER = UUID.fromString("f7d5d5c4-5d1b-4b92-9ee4-0c8c293b5f5a");
     private static final UUID STRENGTH_SPARK_MODIFIER = UUID.fromString("6b0e9d41-90d8-447f-b6ab-3000f84509ee");
 
@@ -22,32 +18,45 @@ public class StrengthInfuse extends BaseInfuse {
 
     @Override
     public void updateSlot(Player player, PlayerData data, int slot, boolean active, InfuseContext context) {
-        SlotHelper.setSlotActionBar(data, slot, active ? "\uE014" : "\uE002");
+        String activeIcon = getString(context, PASSIVE_SECTION, "action-bar-active", "");
+        String inactiveIcon = getString(context, PASSIVE_SECTION, "action-bar-inactive", "");
+        SlotHelper.setSlotActionBar(data, slot, active ? activeIcon : inactiveIcon);
         applyStrengthEquipped(player, data, context);
         if (slot == 1) {
-            data.setPrimaryColorCode(active ? "&4&l" : "&f&l");
+            String activeColor = getString(context, PASSIVE_SECTION, "primary-color-active", "");
+            String inactiveColor = getString(context, PASSIVE_SECTION, "primary-color-inactive", "");
+            data.setPrimaryColorCode(active ? activeColor : inactiveColor);
         }
     }
 
     private void applyStrengthEquipped(Player player, PlayerData data, InfuseContext context) {
+        double baseDamage = getDouble(context, PASSIVE_SECTION, "attack-damage", 0.0);
+        int refreshTicks = getInt(context, PASSIVE_SECTION, "refresh-ticks", 0);
         context.applyTemporaryAttributeModifier(player, Attribute.GENERIC_ATTACK_DAMAGE, STRENGTH_MODIFIER,
-            STRENGTH_DAMAGE_BASE, 4);
+            baseDamage, refreshTicks);
         if (data.isStrengthSparkActive()) {
+            double sparkDamage = getDouble(context, SPARK_SECTION, "attack-damage", 0.0);
+            int sparkRefreshTicks = getInt(context, SPARK_SECTION, "refresh-ticks", 0);
             context.applyTemporaryAttributeModifier(player, Attribute.GENERIC_ATTACK_DAMAGE, STRENGTH_SPARK_MODIFIER,
-                STRENGTH_DAMAGE_SPARK, 4);
+                sparkDamage, sparkRefreshTicks);
         }
     }
 
     @Override
     public void activate(Player player, PlayerData data, int slot, InfuseContext context) {
         SlotHelper.setSlotActive(data, slot, true);
-        SlotHelper.setSlotCooldown(data, slot, 0, 30);
+        int startMinutes = getInt(context, SPARK_SECTION, "cooldown-start-minutes", 0);
+        int startSeconds = getInt(context, SPARK_SECTION, "cooldown-start-seconds", 0);
+        SlotHelper.setSlotCooldown(data, slot, startMinutes, startSeconds);
         data.setStrengthSparkActive(true);
-        Bukkit.getScheduler().runTaskLater(context.getPlugin(), () -> {
+        int durationSeconds = getInt(context, SPARK_SECTION, "duration-seconds", 0);
+        int endMinutes = getInt(context, SPARK_SECTION, "cooldown-end-minutes", 0);
+        int endSeconds = getInt(context, SPARK_SECTION, "cooldown-end-seconds", 0);
+        context.getPlugin().getServer().getScheduler().runTaskLater(context.getPlugin(), () -> {
             data.setStrengthSparkActive(false);
             SlotHelper.setSlotActive(data, slot, false);
-            SlotHelper.setSlotCooldown(data, slot, 2, 0);
-        }, 30L * InfuseConstants.TICKS_PER_SECOND);
+            SlotHelper.setSlotCooldown(data, slot, endMinutes, endSeconds);
+        }, (long) durationSeconds * context.ticksPerSecond());
     }
 
     @Override

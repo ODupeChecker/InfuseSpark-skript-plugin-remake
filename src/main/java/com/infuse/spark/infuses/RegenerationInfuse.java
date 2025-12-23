@@ -1,7 +1,6 @@
 package com.infuse.spark.infuses;
 
 import com.infuse.spark.EffectGroup;
-import com.infuse.spark.InfuseConstants;
 import com.infuse.spark.InfuseItems.InfuseItem;
 import com.infuse.spark.PlayerData;
 import com.infuse.spark.SlotHelper;
@@ -17,16 +16,30 @@ public class RegenerationInfuse extends BaseInfuse {
 
     @Override
     public void updateSlot(Player player, PlayerData data, int slot, boolean active, InfuseContext context) {
-        SlotHelper.setSlotActionBar(data, slot, active ? "\uE021" : "\uE009");
+        String activeIcon = getString(context, PASSIVE_SECTION, "action-bar-active", "");
+        String inactiveIcon = getString(context, PASSIVE_SECTION, "action-bar-inactive", "");
+        SlotHelper.setSlotActionBar(data, slot, active ? activeIcon : inactiveIcon);
         if (slot == 1) {
-            data.setPrimaryColorCode(active ? "&c&l" : "&f&l");
+            String activeColor = getString(context, PASSIVE_SECTION, "primary-color-active", "");
+            String inactiveColor = getString(context, PASSIVE_SECTION, "primary-color-inactive", "");
+            data.setPrimaryColorCode(active ? activeColor : inactiveColor);
         }
     }
 
     @Override
     public void activate(Player player, PlayerData data, int slot, InfuseContext context) {
         SlotHelper.setSlotActive(data, slot, true);
-        SlotHelper.setSlotCooldown(data, slot, 0, 15);
+        int startMinutes = getInt(context, SPARK_SECTION, "cooldown-start-minutes", 0);
+        int startSeconds = getInt(context, SPARK_SECTION, "cooldown-start-seconds", 0);
+        SlotHelper.setSlotCooldown(data, slot, startMinutes, startSeconds);
+        int tickDurationSeconds = getInt(context, SPARK_SECTION, "tick-potion-duration-seconds", 0);
+        int tickLevel = getInt(context, SPARK_SECTION, "tick-potion-level", 0);
+        boolean tickParticles = getBoolean(context, SPARK_SECTION, "tick-potion-particles", false);
+        boolean tickIcon = getBoolean(context, SPARK_SECTION, "tick-potion-icon", false);
+        int radius = getInt(context, SPARK_SECTION, "trusted-radius", 0);
+        int totalTicks = getInt(context, SPARK_SECTION, "tick-count", 0);
+        int endMinutes = getInt(context, SPARK_SECTION, "cooldown-end-minutes", 0);
+        int endSeconds = getInt(context, SPARK_SECTION, "cooldown-end-seconds", 0);
         new BukkitRunnable() {
             int count = 0;
 
@@ -36,23 +49,23 @@ public class RegenerationInfuse extends BaseInfuse {
                     cancel();
                     return;
                 }
-                context.applyPotion(player, PotionEffectType.REGENERATION, 2, 3, false, false);
+                context.applyPotion(player, PotionEffectType.REGENERATION, tickLevel, tickDurationSeconds, tickParticles, tickIcon);
                 for (Player nearby : player.getWorld().getPlayers()) {
-                    if (nearby.getLocation().distance(player.getLocation()) > 16) {
+                    if (nearby.getLocation().distance(player.getLocation()) > radius) {
                         continue;
                     }
                     if (!nearby.equals(player) && data.getTrusted().contains(nearby.getUniqueId())) {
-                        context.applyPotion(player, PotionEffectType.REGENERATION, 2, 3, false, false);
+                        context.applyPotion(player, PotionEffectType.REGENERATION, tickLevel, tickDurationSeconds, tickParticles, tickIcon);
                     }
                 }
                 count++;
-                if (count >= 15) {
+                if (count >= totalTicks) {
                     SlotHelper.setSlotActive(data, slot, false);
-                    SlotHelper.setSlotCooldown(data, slot, 1, 20);
+                    SlotHelper.setSlotCooldown(data, slot, endMinutes, endSeconds);
                     cancel();
                 }
             }
-        }.runTaskTimer(context.getPlugin(), 0L, InfuseConstants.TICKS_PER_SECOND);
+        }.runTaskTimer(context.getPlugin(), 0L, context.ticksPerSecond());
     }
 
     @Override
@@ -61,7 +74,11 @@ public class RegenerationInfuse extends BaseInfuse {
             return;
         }
         if (SlotHelper.hasEffect(data, EffectGroup.PRIMARY, 8) && event.isCritical()) {
-            context.applyPotion(player, PotionEffectType.REGENERATION, 2, 4, false, false);
+            int level = getInt(context, PASSIVE_SECTION, "crit-potion-level", 0);
+            int durationSeconds = getInt(context, PASSIVE_SECTION, "crit-potion-duration-seconds", 0);
+            boolean particles = getBoolean(context, PASSIVE_SECTION, "crit-potion-particles", false);
+            boolean icon = getBoolean(context, PASSIVE_SECTION, "crit-potion-icon", false);
+            context.applyPotion(player, PotionEffectType.REGENERATION, level, durationSeconds, particles, icon);
         }
     }
 }

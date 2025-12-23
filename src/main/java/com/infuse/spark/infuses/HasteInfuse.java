@@ -1,11 +1,9 @@
 package com.infuse.spark.infuses;
 
 import com.infuse.spark.EffectGroup;
-import com.infuse.spark.InfuseConstants;
 import com.infuse.spark.InfuseItems.InfuseItem;
 import com.infuse.spark.PlayerData;
 import com.infuse.spark.SlotHelper;
-import java.util.Set;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -18,22 +16,39 @@ public class HasteInfuse extends BaseInfuse {
 
     @Override
     public void updateSlot(Player player, PlayerData data, int slot, boolean active, InfuseContext context) {
-        SlotHelper.setSlotActionBar(data, slot, active ? "\uE016" : "\uE004");
-        context.applyPotion(player, PotionEffectType.HASTE, 2, 2, false, false);
+        String activeIcon = getString(context, PASSIVE_SECTION, "action-bar-active", "");
+        String inactiveIcon = getString(context, PASSIVE_SECTION, "action-bar-inactive", "");
+        SlotHelper.setSlotActionBar(data, slot, active ? activeIcon : inactiveIcon);
+        int level = getInt(context, PASSIVE_SECTION, "potion-level", 0);
+        int durationSeconds = getInt(context, PASSIVE_SECTION, "potion-duration-seconds", 0);
+        boolean particles = getBoolean(context, PASSIVE_SECTION, "potion-particles", false);
+        boolean icon = getBoolean(context, PASSIVE_SECTION, "potion-icon", false);
+        context.applyPotion(player, PotionEffectType.HASTE, level, durationSeconds, particles, icon);
         if (slot == 1) {
-            data.setPrimaryColorCode(active ? "&6&l" : "&f&l");
+            String activeColor = getString(context, PASSIVE_SECTION, "primary-color-active", "");
+            String inactiveColor = getString(context, PASSIVE_SECTION, "primary-color-inactive", "");
+            data.setPrimaryColorCode(active ? activeColor : inactiveColor);
         }
     }
 
     @Override
     public void activate(Player player, PlayerData data, int slot, InfuseContext context) {
         SlotHelper.setSlotActive(data, slot, true);
-        SlotHelper.setSlotCooldown(data, slot, 0, 45);
-        context.applyPotion(player, PotionEffectType.HASTE, 255, 45, false, false);
+        int startMinutes = getInt(context, SPARK_SECTION, "cooldown-start-minutes", 0);
+        int startSeconds = getInt(context, SPARK_SECTION, "cooldown-start-seconds", 0);
+        SlotHelper.setSlotCooldown(data, slot, startMinutes, startSeconds);
+        int level = getInt(context, SPARK_SECTION, "potion-level", 0);
+        int durationSeconds = getInt(context, SPARK_SECTION, "potion-duration-seconds", 0);
+        boolean particles = getBoolean(context, SPARK_SECTION, "potion-particles", false);
+        boolean icon = getBoolean(context, SPARK_SECTION, "potion-icon", false);
+        context.applyPotion(player, PotionEffectType.HASTE, level, durationSeconds, particles, icon);
+        int endMinutes = getInt(context, SPARK_SECTION, "cooldown-end-minutes", 0);
+        int endSeconds = getInt(context, SPARK_SECTION, "cooldown-end-seconds", 0);
+        int sparkDurationSeconds = getInt(context, SPARK_SECTION, "duration-seconds", 0);
         org.bukkit.Bukkit.getScheduler().runTaskLater(context.getPlugin(), () -> {
             SlotHelper.setSlotActive(data, slot, false);
-            SlotHelper.setSlotCooldown(data, slot, 1, 15);
-        }, 45L * InfuseConstants.TICKS_PER_SECOND);
+            SlotHelper.setSlotCooldown(data, slot, endMinutes, endSeconds);
+        }, (long) sparkDurationSeconds * context.ticksPerSecond());
     }
 
     @Override
@@ -43,19 +58,7 @@ public class HasteInfuse extends BaseInfuse {
             return;
         }
         Material type = event.getBlock().getType();
-        Set<Material> extraDrops = Set.of(
-            Material.DIAMOND_ORE, Material.DEEPSLATE_DIAMOND_ORE,
-            Material.COAL_ORE, Material.DEEPSLATE_COAL_ORE,
-            Material.GOLD_ORE, Material.DEEPSLATE_GOLD_ORE,
-            Material.IRON_ORE, Material.DEEPSLATE_IRON_ORE,
-            Material.EMERALD_ORE, Material.DEEPSLATE_EMERALD_ORE,
-            Material.LAPIS_ORE, Material.DEEPSLATE_LAPIS_ORE,
-            Material.REDSTONE_ORE, Material.DEEPSLATE_REDSTONE_ORE,
-            Material.COPPER_ORE, Material.DEEPSLATE_COPPER_ORE,
-            Material.NETHER_GOLD_ORE, Material.NETHER_QUARTZ_ORE,
-            Material.AMETHYST_CLUSTER
-        );
-        if (!extraDrops.contains(type)) {
+        if (!getExtraDrops(context).contains(type)) {
             return;
         }
         if (player.getGameMode() == org.bukkit.GameMode.CREATIVE) {
@@ -66,5 +69,19 @@ public class HasteInfuse extends BaseInfuse {
             return;
         }
         event.getBlock().getDrops(tool, player).forEach(drop -> player.getWorld().dropItemNaturally(event.getBlock().getLocation(), drop));
+    }
+
+    private java.util.Set<Material> getExtraDrops(InfuseContext context) {
+        java.util.List<String> materialKeys = getStringList(context, PASSIVE_SECTION, "extra-drop-materials", java.util.List.of());
+        java.util.Set<Material> materials = new java.util.HashSet<>();
+        for (String key : materialKeys) {
+            Material material = Material.matchMaterial(key);
+            if (material == null) {
+                context.getPlugin().getLogger().warning("Unknown material in haste.extra-drop-materials: " + key);
+                continue;
+            }
+            materials.add(material);
+        }
+        return materials;
     }
 }
