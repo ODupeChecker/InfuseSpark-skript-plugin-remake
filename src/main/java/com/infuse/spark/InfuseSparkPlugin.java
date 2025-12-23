@@ -66,15 +66,12 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
     private static final double STRENGTH_DAMAGE_SPARK = 1.5;
     private static final double OCEAN_ATTACK_DAMAGE = 2.0;
     private static final double FIRE_ATTACK_DAMAGE = 1.0;
-    private static final double PIG_KNOCKBACK_REDUCTION = 0.08;
     private static final double PIGLIN_MARK_DAMAGE = 1.5;
     private static final double PIGLIN_BLOODMARK_DAMAGE = 3.0;
     private static final int PIGLIN_MARK_WINDOW_SECONDS = 2;
     private static final int PIGLIN_BLOODMARK_WINDOW_SECONDS = 3;
     private static final int PIGLIN_SPARK_DURATION_SECONDS = 10;
     private static final int PIGLIN_SPARK_COOLDOWN_SECONDS = 60;
-    private static final int PIG_SPARK_DURATION_SECONDS = 40;
-    private static final int PIG_SPARK_COOLDOWN_SECONDS = 60;
 
     private static final UUID STRENGTH_MODIFIER = UUID.fromString("f7d5d5c4-5d1b-4b92-9ee4-0c8c293b5f5a");
     private static final UUID STRENGTH_SPARK_MODIFIER = UUID.fromString("6b0e9d41-90d8-447f-b6ab-3000f84509ee");
@@ -87,7 +84,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
     }
 
     private final Map<UUID, PlayerData> playerData = new HashMap<>();
-    private final Map<UUID, Integer> pigHitCounts = new HashMap<>();
+    private final Map<UUID, Long> piglinMarkWindows = new HashMap<>();
     private final Map<UUID, Map<UUID, Long>> piglinMarks = new HashMap<>();
     private final Map<UUID, Integer> piglinGlowCounts = new HashMap<>();
     private final Set<UUID> heartEquipApplied = new HashSet<>();
@@ -369,11 +366,6 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             heartEquipApplied.remove(player.getUniqueId());
         }
 
-        if (!hasEffect(data, EffectGroup.PRIMARY, 10)) {
-            pigHitCounts.remove(player.getUniqueId());
-            removePigKnockback(player);
-        }
-
         if (!hasEffect(data, EffectGroup.PRIMARY, 9)) {
             clearPiglinAttackerState(player.getUniqueId());
         }
@@ -412,10 +404,6 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
                     case 7 -> setSlotActionBar(data, slot, "\uE020");
                     case 8 -> setSlotActionBar(data, slot, "\uE021");
                     case 9 -> setSlotActionBar(data, slot, "\uE029");
-                    case 10 -> {
-                        setSlotActionBar(data, slot, "\uE027");
-                        applyPigEquipped(player);
-                    }
                     default -> {
                     }
                 }
@@ -446,10 +434,6 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
                     case 7 -> setSlotActionBar(data, slot, "\uE008");
                     case 8 -> setSlotActionBar(data, slot, "\uE009");
                     case 9 -> setSlotActionBar(data, slot, "\uE028");
-                    case 10 -> {
-                        setSlotActionBar(data, slot, "\uE026");
-                        applyPigEquipped(player);
-                    }
                     default -> {
                     }
                 }
@@ -526,7 +510,6 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             case 7 -> "&9&l";
             case 8 -> "&c&l";
             case 9 -> "&6&l";
-            case 10 -> "&d&l";
             default -> "&f&l";
         };
     }
@@ -594,22 +577,6 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
 
     private void applySpeedEquipped(Player player) {
         applyPotion(player, PotionEffectType.SPEED, 2, 2, false, false);
-    }
-
-    private void applyPigEquipped(Player player) {
-        if (pigKnockbackApplied.contains(player.getUniqueId())) {
-            return;
-        }
-        applyAttributeModifier(player, Attribute.GENERIC_KNOCKBACK_RESISTANCE, PIG_KNOCKBACK_MODIFIER, PIG_KNOCKBACK_REDUCTION);
-        pigKnockbackApplied.add(player.getUniqueId());
-    }
-
-    private void removePigKnockback(Player player) {
-        if (!pigKnockbackApplied.contains(player.getUniqueId())) {
-            return;
-        }
-        removeAttributeModifier(player, Attribute.GENERIC_KNOCKBACK_RESISTANCE, PIG_KNOCKBACK_MODIFIER);
-        pigKnockbackApplied.remove(player.getUniqueId());
     }
 
     private void applyPotion(Player player, PotionEffectType type, int level, int seconds, boolean particles, boolean icon) {
@@ -761,121 +728,6 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         }
     }
 
-    private void triggerPigSparkHeal(Player player, PlayerData data, int slot) {
-        if (!data.isPigSparkPrimed()) {
-            return;
-        }
-        data.setPigSparkPrimed(false);
-        setSlotActive(data, slot, false);
-        setSlotCooldown(data, slot, PIG_SPARK_COOLDOWN_SECONDS / 60, PIG_SPARK_COOLDOWN_SECONDS % 60);
-        Bukkit.getScheduler().runTask(this, () -> {
-            if (!player.isOnline() || player.isDead()) {
-                return;
-            }
-            AttributeInstance maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
-            double max = maxHealth != null ? maxHealth.getValue() : 20.0;
-            player.setHealth(Math.min(max, player.getHealth() + 8.0));
-        });
-    }
-
-    private void handlePiglinMarkAttack(Player attacker, PlayerData data, EntityDamageByEntityEvent event) {
-        if (event.isCancelled()) {
-            return;
-        }
-        if (!(event.getEntity() instanceof Player target)) {
-            return;
-        }
-        if (data.getTrusted().contains(target.getUniqueId())) {
-            return;
-        }
-        UUID attackerId = attacker.getUniqueId();
-        UUID targetId = target.getUniqueId();
-        long now = System.currentTimeMillis();
-        Map<UUID, Long> marks = piglinMarks.computeIfAbsent(attackerId, id -> new HashMap<>());
-        Long markExpires = marks.get(targetId);
-        if (markExpires == null) {
-            return;
-        }
-        if (markExpires <= now) {
-            removePiglinMark(attackerId, targetId);
-            return;
-        }
-        double bonusDamage = data.isPiglinSparkActive() ? PIGLIN_BLOODMARK_DAMAGE : PIGLIN_MARK_DAMAGE;
-        event.setDamage(event.getDamage() + bonusDamage);
-        removePiglinMark(attackerId, targetId);
-    }
-
-    private void addPiglinMark(UUID attackerId, Player target, int durationSeconds) {
-        Map<UUID, Long> marks = piglinMarks.computeIfAbsent(attackerId, id -> new HashMap<>());
-        UUID targetId = target.getUniqueId();
-        if (marks.containsKey(targetId)) {
-            return;
-        }
-        long expiresAt = System.currentTimeMillis() + (durationSeconds * 1000L);
-        marks.put(targetId, expiresAt);
-        adjustPiglinGlow(targetId, 1);
-        Bukkit.getScheduler().runTaskLater(this, () -> {
-            Map<UUID, Long> current = piglinMarks.get(attackerId);
-            if (current == null) {
-                return;
-            }
-            Long currentExpires = current.get(targetId);
-            if (currentExpires != null && currentExpires <= System.currentTimeMillis()) {
-                removePiglinMark(attackerId, targetId);
-            }
-        }, durationSeconds * TICKS_PER_SECOND);
-    }
-
-    private void removePiglinMark(UUID attackerId, UUID targetId) {
-        Map<UUID, Long> marks = piglinMarks.get(attackerId);
-        if (marks == null) {
-            return;
-        }
-        if (marks.remove(targetId) != null) {
-            adjustPiglinGlow(targetId, -1);
-        }
-        if (marks.isEmpty()) {
-            piglinMarks.remove(attackerId);
-        }
-    }
-
-    private void adjustPiglinGlow(UUID targetId, int delta) {
-        int next = piglinGlowCounts.getOrDefault(targetId, 0) + delta;
-        if (next <= 0) {
-            piglinGlowCounts.remove(targetId);
-            Player target = Bukkit.getPlayer(targetId);
-            if (target != null) {
-                target.setGlowing(false);
-            }
-            return;
-        }
-        piglinGlowCounts.put(targetId, next);
-        Player target = Bukkit.getPlayer(targetId);
-        if (target != null) {
-            target.setGlowing(true);
-        }
-    }
-
-    private void clearPiglinAttackerState(UUID attackerId) {
-        Map<UUID, Long> marks = piglinMarks.remove(attackerId);
-        if (marks == null) {
-            return;
-        }
-        for (UUID targetId : marks.keySet()) {
-            adjustPiglinGlow(targetId, -1);
-        }
-    }
-
-    private void clearPiglinTargetState(UUID targetId) {
-        for (UUID attackerId : Set.copyOf(piglinMarks.keySet())) {
-            Map<UUID, Long> marks = piglinMarks.get(attackerId);
-            if (marks == null || !marks.containsKey(targetId)) {
-                continue;
-            }
-            removePiglinMark(attackerId, targetId);
-        }
-    }
-
     private boolean handleInfuseCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player player)) {
             sender.sendMessage("Player only.");
@@ -957,8 +809,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             case "frost" -> new EffectSelection(EffectGroup.PRIMARY, 6);
             case "thunder" -> new EffectSelection(EffectGroup.PRIMARY, 7);
             case "regeneration" -> new EffectSelection(EffectGroup.PRIMARY, 8);
-            case "piglin" -> new EffectSelection(EffectGroup.PRIMARY, 9);
-            case "pig" -> new EffectSelection(EffectGroup.PRIMARY, 10);
+            case "piglin", "pig" -> new EffectSelection(EffectGroup.PRIMARY, 9);
             case "ocean" -> new EffectSelection(EffectGroup.SUPPORT, 1);
             case "fire" -> new EffectSelection(EffectGroup.SUPPORT, 2);
             case "emerald" -> new EffectSelection(EffectGroup.SUPPORT, 3);
@@ -1087,8 +938,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             case 6 -> runFrostSpark(player, data, slot);
             case 7 -> runThunderSpark(player, data, slot);
             case 8 -> runRegenerationSpark(player, data, slot);
-            case 9 -> runPiglinSpark(player, data, slot);
-            case 10 -> runPigSpark(player, data, slot);
+            case 9 -> runPigSpark(player, data, slot);
             default -> {
             }
         }
@@ -1276,7 +1126,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         }.runTaskTimer(this, 0L, TICKS_PER_SECOND);
     }
 
-    private void runPiglinSpark(Player player, PlayerData data, int slot) {
+    private void runPigSpark(Player player, PlayerData data, int slot) {
         setSlotActive(data, slot, true);
         setSlotCooldown(data, slot, 0, PIGLIN_SPARK_DURATION_SECONDS);
         data.setPiglinSparkActive(true);
@@ -1309,26 +1159,6 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
                 }
             }
         }.runTaskTimer(this, 0L, 5L);
-    }
-
-    private void runPigSpark(Player player, PlayerData data, int slot) {
-        setSlotActive(data, slot, true);
-        setSlotCooldown(data, slot, 0, PIG_SPARK_DURATION_SECONDS);
-        data.setPigSparkPrimed(true);
-        player.playSound(player.getLocation(), Sound.ENTITY_PIG_SADDLE, 1.0f, 1.0f);
-        int healthThreshold = 8;
-        if (player.getHealth() <= healthThreshold) {
-            triggerPigSparkHeal(player, data, slot);
-            return;
-        }
-        Bukkit.getScheduler().runTaskLater(this, () -> {
-            if (!isSlotActive(data, slot) || !data.isPigSparkPrimed()) {
-                return;
-            }
-            data.setPigSparkPrimed(false);
-            setSlotActive(data, slot, false);
-            setSlotCooldown(data, slot, PIG_SPARK_COOLDOWN_SECONDS / 60, PIG_SPARK_COOLDOWN_SECONDS % 60);
-        }, PIG_SPARK_DURATION_SECONDS * TICKS_PER_SECOND);
     }
 
     private void hidePlayerFromAll(Player player) {
@@ -1391,7 +1221,6 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             case 7 -> InfuseItem.PRIMARY_THUNDER;
             case 8 -> InfuseItem.PRIMARY_REGENERATION;
             case 9 -> InfuseItem.PRIMARY_PIGLIN;
-            case 10 -> InfuseItem.PRIMARY_PIG;
             default -> null;
         };
     }
@@ -1421,8 +1250,6 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         Player player = event.getPlayer();
         removeTemporaryModifiers(player);
         revealPlayerToAll(player);
-        pigHitCounts.remove(player.getUniqueId());
-        pigKnockbackApplied.remove(player.getUniqueId());
         clearPiglinAttackerState(player.getUniqueId());
         clearPiglinTargetState(player.getUniqueId());
         PlayerData data = getData(player);
@@ -1468,7 +1295,6 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             case PRIMARY_THUNDER -> new EffectSelection(EffectGroup.PRIMARY, 7);
             case PRIMARY_REGENERATION -> new EffectSelection(EffectGroup.PRIMARY, 8);
             case PRIMARY_PIGLIN -> new EffectSelection(EffectGroup.PRIMARY, 9);
-            case PRIMARY_PIG -> new EffectSelection(EffectGroup.PRIMARY, 10);
             case SUPPORT_OCEAN -> new EffectSelection(EffectGroup.SUPPORT, 1);
             case SUPPORT_FIRE -> new EffectSelection(EffectGroup.SUPPORT, 2);
             case SUPPORT_EMERALD -> new EffectSelection(EffectGroup.SUPPORT, 3);
@@ -1642,61 +1468,8 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         if (!hasEffect(data, EffectGroup.PRIMARY, 9)) {
             return;
         }
-        if (!(event.getDamager() instanceof Player damager)) {
-            return;
-        }
-        if (data.getTrusted().contains(damager.getUniqueId())) {
-            return;
-        }
         int windowSeconds = data.isPiglinSparkActive() ? PIGLIN_BLOODMARK_WINDOW_SECONDS : PIGLIN_MARK_WINDOW_SECONDS;
-        addPiglinMark(player.getUniqueId(), damager, windowSeconds);
-    }
-
-    @EventHandler
-    public void onPigSparkLowHealth(EntityDamageEvent event) {
-        if (!(event.getEntity() instanceof Player player)) {
-            return;
-        }
-        if (event.isCancelled()) {
-            return;
-        }
-        PlayerData data = getData(player);
-        if (!hasEffect(data, EffectGroup.PRIMARY, 10) || !isEffectActive(data, EffectGroup.PRIMARY, 10) || !data.isPigSparkPrimed()) {
-            return;
-        }
-        double finalHealth = player.getHealth() - event.getFinalDamage();
-        if (finalHealth > 8.0) {
-            return;
-        }
-        if (finalHealth <= 0) {
-            event.setDamage(Math.max(0.0, player.getHealth() - 1.0));
-        }
-        int slot = getActiveSlotForEffect(data, EffectGroup.PRIMARY, 10);
-        if (slot == 0) {
-            return;
-        }
-        triggerPigSparkHeal(player, data, slot);
-    }
-
-    @EventHandler
-    public void onPiglinEffectHit(EntityDamageByEntityEvent event) {
-        if (!(event.getEntity() instanceof Player player)) {
-            return;
-        }
-        if (event.isCancelled()) {
-            return;
-        }
-        PlayerData data = getData(player);
-        if (!hasEffect(data, EffectGroup.PRIMARY, 10)) {
-            return;
-        }
-        int hits = pigHitCounts.getOrDefault(player.getUniqueId(), 0) + 1;
-        if (hits >= 5) {
-            pigHitCounts.put(player.getUniqueId(), 0);
-            applyPotion(player, PotionEffectType.SPEED, 3, 3, false, false);
-        } else {
-            pigHitCounts.put(player.getUniqueId(), hits);
-        }
+        piglinMarkWindows.put(player.getUniqueId(), System.currentTimeMillis() + (windowSeconds * 1000L));
     }
 
     @EventHandler
@@ -1763,7 +1536,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             if (args.length == 4 && args[0].equalsIgnoreCase("spark") && args[1].equalsIgnoreCase("equip")) {
                 if (args[2].equalsIgnoreCase("effect")) {
                     return List.of("empty", "strength", "heart", "haste", "invisibility", "feather", "frost", "thunder", "regeneration",
-                        "pig", "piglin", "ocean", "fire", "emerald", "speed");
+                        "piglin", "ocean", "fire", "emerald", "speed");
                 }
             }
             if (args.length == 5 && args[0].equalsIgnoreCase("spark") && args[1].equalsIgnoreCase("equip")) {

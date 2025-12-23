@@ -30,7 +30,6 @@ public class InfuseItems {
         PRIMARY_REGENERATION,
         PRIMARY_STRENGTH,
         PRIMARY_THUNDER,
-        PRIMARY_PIG,
         PRIMARY_PIGLIN
     }
 
@@ -232,22 +231,6 @@ public class InfuseItems {
             Color.fromRGB(255, 170, 51),
             List.of(
                 "&9Effect",
-                "&7After being hit 5 times gain &oSpeed III &7for 3s",
-                "&7Take 8% less knockback",
-                "",
-                "&9Spark Ability",
-                "&7Instantly heal 4 hearts when at 4 hearts",
-                "",
-                "&8Duration: &340s &8Cooldown: &360s"
-            ),
-            InfuseItem.PRIMARY_PIGLIN
-        ));
-
-        items.put(InfuseItem.PRIMARY_PIGLIN, createPotion(
-            "&6&lThe Piglin Effect",
-            Color.fromRGB(255, 170, 51),
-            List.of(
-                "&9Effect",
                 "&7Getting hit opens a 2s mark window",
                 "&7Your next hit in the window deals &o+0.75 hearts",
                 "&7Mark consumed on hit",
@@ -353,14 +336,6 @@ public class InfuseItems {
             new Ingredient('b', Material.SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE),
             new Ingredient('c', Material.TRIDENT),
             new Ingredient('d', Material.CREEPER_HEAD)
-        );
-
-        registerRecipe("piglin_effect", items.get(InfuseItem.PRIMARY_PIGLIN),
-            "aba", "cdc", "aba",
-            new Ingredient('a', Material.PORKCHOP),
-            new Ingredient('b', Material.GOLDEN_CARROT),
-            new Ingredient('c', Material.SADDLE),
-            new Ingredient('d', Material.PIG_SPAWN_EGG)
         );
 
         registerRecipe("piglin_effect", items.get(InfuseItem.PRIMARY_PIGLIN),
