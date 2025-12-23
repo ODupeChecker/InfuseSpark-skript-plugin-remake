@@ -7,12 +7,14 @@ Standalone Paper plugin conversion of the original Infuse Skript. This plugin ke
 - Ability activations with the same cooldowns, sounds, and action bar icons.
 - Support for `/infuse` and `/drain` commands.
 - Built-in HTTP server to serve the resource pack.
-- Adds the Pig Effect primary infuse (speed-on-hit passive, knockback reduction, exploding pig spark).
+- Adds The Piglin Effect primary infuse (mark windows and bloodmark sparks).
 
 ## Commands
-- `/infuse spark equip <primary|support> <type>`
+- `/infuse spark equip effect <type> <1|2>`
+  - Types: `strength`, `heart`, `haste`, `invisibility`, `feather`, `frost`, `thunder`, `regeneration`, `piglin`,
+    `ocean`, `fire`, `emerald`, `speed`
 - `/infuse spark cd_reset`
-- `/infuse settings control_set <offhand|crouch_mouseclicks|custom_keys>`
+- `/infuse settings control_set <offhand|crouch_mouseclicks|ari_keys>`
 - `/infuse primary` (activate primary ability)
 - `/infuse support` (activate support ability)
 - `/infuse ability <primary|support>`
@@ -28,17 +30,17 @@ The plugin serves a resource pack from the plugin data folder. To get the textur
 
 Then copy `Infuse Pack.zip` into `plugins/Infuse/` (same folder as `config.yml`) and the plugin will host it over HTTP.
 
-### Updating the resource pack for Pig Effect
-To show the Pig Effect icon on the action bar, update the resource pack:
+### Updating the resource pack for The Piglin Effect
+To show The Piglin Effect icon on the action bar, update the resource pack:
 1. Open `Infuse Pack.zip` and locate `assets/minecraft/font/default.json`.
-2. In the `providers` list (custom textures section), add entries for the pig textures alongside the existing entries like `emerald.png` and `emeraldspark.png`.
+2. In the `providers` list (custom textures section), add entries for the piglin textures alongside the existing entries like `emerald.png` and `emeraldspark.png`.
 3. Place new texture files in the same folder as the other infuse textures:
-   - `pig.png` (inactive icon)
-   - `pigspark.png` (active icon)
+   - `piglin.png` (inactive icon)
+   - `piglinspark.png` (active icon)
 
-Use the same format as the other abilities, but assign the Pig Effect glyphs to the next available codes:
-- `\uE026` for `pig.png`
-- `\uE027` for `pigspark.png`
+Use the same format as the other abilities, but assign The Piglin Effect glyphs to the next available codes:
+- `\uE028` for `piglin.png`
+- `\uE029` for `piglinspark.png`
 
 Configure `config.yml`:
 ```yaml
