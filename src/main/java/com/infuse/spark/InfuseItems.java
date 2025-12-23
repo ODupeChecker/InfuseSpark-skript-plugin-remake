@@ -265,15 +265,14 @@ public class InfuseItems {
             Color.fromRGB(255, 140, 0),
             List.of(
                 "&9Effect",
-                "&7Gain &o+10% Attack Speed &7per hit",
-                "&7Up to &o5 stacks",
-                "&7Stacks reset on damage or 5s inactivity",
+                "&740% chance to mirror hits",
+                "&7Echoed hits deal &o-20% damage",
                 "",
                 "&9Spark Ability",
-                "&7Instantly gain 5 stacks",
-                "&7Stacks unbreakable for 10s",
+                "&7100% chance to mirror hits",
+                "&7Echoed hits deal &o-10% damage",
                 "",
-                "&8Duration: &310s &8Cooldown: &30s"
+                "&8Duration: &36s &8Cooldown: &360s"
             ),
             InfuseItem.PRIMARY_OVERDRIVE
         ));
