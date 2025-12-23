@@ -4,13 +4,16 @@ import com.infuse.spark.EffectGroup;
 import com.infuse.spark.InfuseItems.InfuseItem;
 import com.infuse.spark.PlayerData;
 import com.infuse.spark.SlotHelper;
-import java.util.UUID;
-import org.bukkit.attribute.Attribute;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.entity.Player;
 
 public class StrengthInfuse extends BaseInfuse {
-    private static final UUID STRENGTH_MODIFIER = UUID.fromString("f7d5d5c4-5d1b-4b92-9ee4-0c8c293b5f5a");
-    private static final UUID STRENGTH_SPARK_MODIFIER = UUID.fromString("6b0e9d41-90d8-447f-b6ab-3000f84509ee");
+    private static final double BELOW_SIX_HEARTS = 12.0;
+    private static final double BELOW_FOUR_HEARTS = 8.0;
+    private static final double BELOW_TWO_HEARTS = 4.0;
 
     public StrengthInfuse() {
         super(EffectGroup.PRIMARY, 1, "strength", InfuseItem.PRIMARY_STRENGTH);
@@ -21,24 +24,10 @@ public class StrengthInfuse extends BaseInfuse {
         String activeIcon = getString(context, PASSIVE_SECTION, "action-bar-active", "");
         String inactiveIcon = getString(context, PASSIVE_SECTION, "action-bar-inactive", "");
         SlotHelper.setSlotActionBar(data, slot, active ? activeIcon : inactiveIcon);
-        applyStrengthEquipped(player, data, context);
         if (slot == 1) {
             String activeColor = getString(context, PASSIVE_SECTION, "primary-color-active", "");
             String inactiveColor = getString(context, PASSIVE_SECTION, "primary-color-inactive", "");
             data.setPrimaryColorCode(active ? activeColor : inactiveColor);
-        }
-    }
-
-    private void applyStrengthEquipped(Player player, PlayerData data, InfuseContext context) {
-        double baseDamage = getDouble(context, PASSIVE_SECTION, "attack-damage", 0.0);
-        int refreshTicks = getInt(context, PASSIVE_SECTION, "refresh-ticks", 0);
-        context.applyTemporaryAttributeModifier(player, Attribute.GENERIC_ATTACK_DAMAGE, STRENGTH_MODIFIER,
-            baseDamage, refreshTicks);
-        if (data.isStrengthSparkActive()) {
-            double sparkDamage = getDouble(context, SPARK_SECTION, "attack-damage", 0.0);
-            int sparkRefreshTicks = getInt(context, SPARK_SECTION, "refresh-ticks", 0);
-            context.applyTemporaryAttributeModifier(player, Attribute.GENERIC_ATTACK_DAMAGE, STRENGTH_SPARK_MODIFIER,
-                sparkDamage, sparkRefreshTicks);
         }
     }
 
@@ -60,17 +49,57 @@ public class StrengthInfuse extends BaseInfuse {
     }
 
     @Override
+    public void onEntityDamageByEntity(EntityDamageByEntityEvent event, PlayerData data, InfuseContext context) {
+        if (!(event.getDamager() instanceof Player player)) {
+            return;
+        }
+        if (!SlotHelper.hasEffect(data, EffectGroup.PRIMARY, 1)) {
+            return;
+        }
+        applyLowHealthBonus(event, player, context);
+        if (data.isStrengthSparkActive()) {
+            applySparkCritical(event, player);
+        }
+    }
+
+    @Override
     public void onPlayerQuit(org.bukkit.event.player.PlayerQuitEvent event, PlayerData data, InfuseContext context) {
-        removeModifiers(event.getPlayer(), context);
     }
 
     @Override
     public void onDisable(Player player, PlayerData data, InfuseContext context) {
-        removeModifiers(player, context);
     }
 
-    private void removeModifiers(Player player, InfuseContext context) {
-        context.removeAttributeModifier(player, Attribute.GENERIC_ATTACK_DAMAGE, STRENGTH_MODIFIER);
-        context.removeAttributeModifier(player, Attribute.GENERIC_ATTACK_DAMAGE, STRENGTH_SPARK_MODIFIER);
+    private void applyLowHealthBonus(EntityDamageByEntityEvent event, Player player, InfuseContext context) {
+        double health = player.getHealth();
+        double bonusDamage = 0.0;
+        if (health < BELOW_TWO_HEARTS) {
+            bonusDamage = getDouble(context, PASSIVE_SECTION, "bonus-damage-below-2-hearts", 0.0);
+        } else if (health < BELOW_FOUR_HEARTS) {
+            bonusDamage = getDouble(context, PASSIVE_SECTION, "bonus-damage-below-4-hearts", 0.0);
+        } else if (health < BELOW_SIX_HEARTS) {
+            bonusDamage = getDouble(context, PASSIVE_SECTION, "bonus-damage-below-6-hearts", 0.0);
+        }
+        if (bonusDamage > 0.0) {
+            event.setDamage(event.getDamage() + bonusDamage);
+        }
+    }
+
+    private void applySparkCritical(EntityDamageByEntityEvent event, Player player) {
+        if (player.getAttackCooldown() < 0.9f) {
+            return;
+        }
+        boolean critical = event.isCritical();
+        boolean sweep = event.getCause() == EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK;
+        boolean sprint = player.isSprinting();
+        if (!critical && !(sweep || sprint)) {
+            return;
+        }
+        if (!critical) {
+            event.setCritical(true);
+            player.getWorld().spawnParticle(Particle.CRIT, event.getEntity().getLocation().add(0.0, 1.0, 0.0),
+                12, 0.2, 0.2, 0.2, 0.0);
+            player.getWorld().playSound(event.getEntity().getLocation(), Sound.ENTITY_PLAYER_ATTACK_CRIT, 1.0f, 1.0f);
+        }
     }
 }
