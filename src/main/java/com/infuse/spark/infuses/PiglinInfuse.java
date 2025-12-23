@@ -128,7 +128,7 @@ public class PiglinInfuse extends BaseInfuse {
         double bonusDamage = data.isPiglinSparkActive()
             ? getDouble(context, SPARK_SECTION, "bonus-damage", 1.8)
             : getDouble(context, PASSIVE_SECTION, "bonus-damage", 1.25);
-        event.setDamage(event.getDamage() + bonusDamage);
+        applyTrueDamage(target, bonusDamage);
         consumeMark(piglin.getUniqueId(), target.getUniqueId(), data, context);
     }
 
@@ -201,6 +201,14 @@ public class PiglinInfuse extends BaseInfuse {
         if (player != null) {
             player.removePotionEffect(PotionEffectType.GLOWING);
         }
+    }
+
+    private void applyTrueDamage(Player target, double amount) {
+        if (amount <= 0) {
+            return;
+        }
+        double health = target.getHealth();
+        target.setHealth(Math.max(0.0, health - amount));
     }
 
     private void clearPiglinMarks(UUID piglinId) {
