@@ -231,12 +231,20 @@ public class PlayerData {
         this.fireSparkActive = fireSparkActive;
     }
 
-    public boolean isPigSparkPrimed() {
-        return pigSparkPrimed;
+    public boolean isPiglinSparkActive() {
+        return piglinSparkActive;
     }
 
-    public void setPigSparkPrimed(boolean pigSparkPrimed) {
-        this.pigSparkPrimed = pigSparkPrimed;
+    public void setPiglinSparkActive(boolean piglinSparkActive) {
+        this.piglinSparkActive = piglinSparkActive;
+    }
+
+    public boolean isPiglinSparkActive() {
+        return piglinSparkActive;
+    }
+
+    public void setPiglinSparkActive(boolean piglinSparkActive) {
+        this.piglinSparkActive = piglinSparkActive;
     }
 
     public boolean isPiglinSparkActive() {

@@ -82,7 +82,6 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
     private static final UUID FIRE_ATTACK_MODIFIER = UUID.fromString("b7db23cc-fba1-4f7a-8896-9cf813f6a47b");
     private static final UUID HEART_EQUIP_MODIFIER = UUID.fromString("1f57d91f-1f48-4c91-bbb5-7e8d7a4b59a4");
     private static final UUID HEART_SPARK_MODIFIER = UUID.fromString("8f7625b1-2f43-4a28-9e1c-c5c1c4e5c169");
-    private static final UUID PIG_KNOCKBACK_MODIFIER = UUID.fromString("e3a44368-b83e-49a6-a79c-0d0c5978a9c8");
 
     private record EffectSelection(EffectGroup group, int effectId) {
     }
@@ -92,7 +91,6 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
     private final Map<UUID, Map<UUID, Long>> piglinMarks = new HashMap<>();
     private final Map<UUID, Integer> piglinGlowCounts = new HashMap<>();
     private final Set<UUID> heartEquipApplied = new HashSet<>();
-    private final Set<UUID> pigKnockbackApplied = new HashSet<>();
     private final Set<UUID> invisibilityHidden = new HashSet<>();
     private final Random random = new Random();
 
@@ -658,7 +656,224 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         removeAttributeModifier(player, Attribute.GENERIC_ATTACK_DAMAGE, OCEAN_ATTACK_MODIFIER);
         removeAttributeModifier(player, Attribute.GENERIC_ATTACK_DAMAGE, FIRE_ATTACK_MODIFIER);
         removeAttributeModifier(player, Attribute.GENERIC_MAX_HEALTH, HEART_SPARK_MODIFIER);
-        removeAttributeModifier(player, Attribute.GENERIC_KNOCKBACK_RESISTANCE, PIG_KNOCKBACK_MODIFIER);
+    }
+
+    private void handlePiglinMarkAttack(Player attacker, PlayerData data, EntityDamageByEntityEvent event) {
+        if (event.isCancelled()) {
+            return;
+        }
+        if (!(event.getEntity() instanceof Player target)) {
+            return;
+        }
+        if (data.getTrusted().contains(target.getUniqueId())) {
+            return;
+        }
+        UUID attackerId = attacker.getUniqueId();
+        UUID targetId = target.getUniqueId();
+        long now = System.currentTimeMillis();
+        Map<UUID, Long> marks = piglinMarks.computeIfAbsent(attackerId, id -> new HashMap<>());
+        Long markExpires = marks.get(targetId);
+        if (markExpires != null) {
+            if (markExpires > now) {
+                return;
+            }
+            removePiglinMark(attackerId, targetId);
+        }
+        Long windowExpires = piglinMarkWindows.get(attackerId);
+        if (windowExpires == null || windowExpires <= now) {
+            return;
+        }
+        int windowSeconds = data.isPiglinSparkActive() ? PIGLIN_BLOODMARK_WINDOW_SECONDS : PIGLIN_MARK_WINDOW_SECONDS;
+        double bonusDamage = data.isPiglinSparkActive() ? PIGLIN_BLOODMARK_DAMAGE : PIGLIN_MARK_DAMAGE;
+        event.setDamage(event.getDamage() + bonusDamage);
+        addPiglinMark(attackerId, target, windowSeconds);
+    }
+
+    private void addPiglinMark(UUID attackerId, Player target, int durationSeconds) {
+        Map<UUID, Long> marks = piglinMarks.computeIfAbsent(attackerId, id -> new HashMap<>());
+        UUID targetId = target.getUniqueId();
+        if (marks.containsKey(targetId)) {
+            return;
+        }
+        long expiresAt = System.currentTimeMillis() + (durationSeconds * 1000L);
+        marks.put(targetId, expiresAt);
+        adjustPiglinGlow(targetId, 1);
+        Bukkit.getScheduler().runTaskLater(this, () -> {
+            Map<UUID, Long> current = piglinMarks.get(attackerId);
+            if (current == null) {
+                return;
+            }
+            Long currentExpires = current.get(targetId);
+            if (currentExpires != null && currentExpires <= System.currentTimeMillis()) {
+                removePiglinMark(attackerId, targetId);
+            }
+        }, durationSeconds * TICKS_PER_SECOND);
+    }
+
+    private void removePiglinMark(UUID attackerId, UUID targetId) {
+        Map<UUID, Long> marks = piglinMarks.get(attackerId);
+        if (marks == null) {
+            return;
+        }
+        if (marks.remove(targetId) != null) {
+            adjustPiglinGlow(targetId, -1);
+        }
+        if (marks.isEmpty()) {
+            piglinMarks.remove(attackerId);
+        }
+    }
+
+    private void adjustPiglinGlow(UUID targetId, int delta) {
+        int next = piglinGlowCounts.getOrDefault(targetId, 0) + delta;
+        if (next <= 0) {
+            piglinGlowCounts.remove(targetId);
+            Player target = Bukkit.getPlayer(targetId);
+            if (target != null) {
+                target.setGlowing(false);
+            }
+            return;
+        }
+        piglinGlowCounts.put(targetId, next);
+        Player target = Bukkit.getPlayer(targetId);
+        if (target != null) {
+            target.setGlowing(true);
+        }
+    }
+
+    private void clearPiglinAttackerState(UUID attackerId) {
+        piglinMarkWindows.remove(attackerId);
+        Map<UUID, Long> marks = piglinMarks.remove(attackerId);
+        if (marks == null) {
+            return;
+        }
+        for (UUID targetId : marks.keySet()) {
+            adjustPiglinGlow(targetId, -1);
+        }
+    }
+
+    private void clearPiglinTargetState(UUID targetId) {
+        for (UUID attackerId : Set.copyOf(piglinMarks.keySet())) {
+            Map<UUID, Long> marks = piglinMarks.get(attackerId);
+            if (marks == null || !marks.containsKey(targetId)) {
+                continue;
+            }
+            removePiglinMark(attackerId, targetId);
+        }
+    }
+
+    private void triggerPigSparkHeal(Player player, PlayerData data, int slot) {
+        if (!data.isPigSparkPrimed()) {
+            return;
+        }
+        data.setPigSparkPrimed(false);
+        setSlotActive(data, slot, false);
+        setSlotCooldown(data, slot, PIG_SPARK_COOLDOWN_SECONDS / 60, PIG_SPARK_COOLDOWN_SECONDS % 60);
+        Bukkit.getScheduler().runTask(this, () -> {
+            if (!player.isOnline() || player.isDead()) {
+                return;
+            }
+            AttributeInstance maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+            double max = maxHealth != null ? maxHealth.getValue() : 20.0;
+            player.setHealth(Math.min(max, player.getHealth() + 8.0));
+        });
+    }
+
+    private void handlePiglinMarkAttack(Player attacker, PlayerData data, EntityDamageByEntityEvent event) {
+        if (event.isCancelled()) {
+            return;
+        }
+        if (!(event.getEntity() instanceof Player target)) {
+            return;
+        }
+        if (data.getTrusted().contains(target.getUniqueId())) {
+            return;
+        }
+        UUID attackerId = attacker.getUniqueId();
+        UUID targetId = target.getUniqueId();
+        long now = System.currentTimeMillis();
+        Map<UUID, Long> marks = piglinMarks.computeIfAbsent(attackerId, id -> new HashMap<>());
+        Long markExpires = marks.get(targetId);
+        if (markExpires == null) {
+            return;
+        }
+        if (markExpires <= now) {
+            removePiglinMark(attackerId, targetId);
+            return;
+        }
+        double bonusDamage = data.isPiglinSparkActive() ? PIGLIN_BLOODMARK_DAMAGE : PIGLIN_MARK_DAMAGE;
+        event.setDamage(event.getDamage() + bonusDamage);
+        removePiglinMark(attackerId, targetId);
+    }
+
+    private void addPiglinMark(UUID attackerId, Player target, int durationSeconds) {
+        Map<UUID, Long> marks = piglinMarks.computeIfAbsent(attackerId, id -> new HashMap<>());
+        UUID targetId = target.getUniqueId();
+        if (marks.containsKey(targetId)) {
+            return;
+        }
+        long expiresAt = System.currentTimeMillis() + (durationSeconds * 1000L);
+        marks.put(targetId, expiresAt);
+        adjustPiglinGlow(targetId, 1);
+        Bukkit.getScheduler().runTaskLater(this, () -> {
+            Map<UUID, Long> current = piglinMarks.get(attackerId);
+            if (current == null) {
+                return;
+            }
+            Long currentExpires = current.get(targetId);
+            if (currentExpires != null && currentExpires <= System.currentTimeMillis()) {
+                removePiglinMark(attackerId, targetId);
+            }
+        }, durationSeconds * TICKS_PER_SECOND);
+    }
+
+    private void removePiglinMark(UUID attackerId, UUID targetId) {
+        Map<UUID, Long> marks = piglinMarks.get(attackerId);
+        if (marks == null) {
+            return;
+        }
+        if (marks.remove(targetId) != null) {
+            adjustPiglinGlow(targetId, -1);
+        }
+        if (marks.isEmpty()) {
+            piglinMarks.remove(attackerId);
+        }
+    }
+
+    private void adjustPiglinGlow(UUID targetId, int delta) {
+        int next = piglinGlowCounts.getOrDefault(targetId, 0) + delta;
+        if (next <= 0) {
+            piglinGlowCounts.remove(targetId);
+            Player target = Bukkit.getPlayer(targetId);
+            if (target != null) {
+                target.setGlowing(false);
+            }
+            return;
+        }
+        piglinGlowCounts.put(targetId, next);
+        Player target = Bukkit.getPlayer(targetId);
+        if (target != null) {
+            target.setGlowing(true);
+        }
+    }
+
+    private void clearPiglinAttackerState(UUID attackerId) {
+        Map<UUID, Long> marks = piglinMarks.remove(attackerId);
+        if (marks == null) {
+            return;
+        }
+        for (UUID targetId : marks.keySet()) {
+            adjustPiglinGlow(targetId, -1);
+        }
+    }
+
+    private void clearPiglinTargetState(UUID targetId) {
+        for (UUID attackerId : Set.copyOf(piglinMarks.keySet())) {
+            Map<UUID, Long> marks = piglinMarks.get(attackerId);
+            if (marks == null || !marks.containsKey(targetId)) {
+                continue;
+            }
+            removePiglinMark(attackerId, targetId);
+        }
     }
 
     private void triggerPigSparkHeal(Player player, PlayerData data, int slot) {
@@ -1579,7 +1794,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
     }
 
     @EventHandler
-    public void onPigEffectHit(EntityDamageByEntityEvent event) {
+    public void onPiglinEffectHit(EntityDamageByEntityEvent event) {
         if (!(event.getEntity() instanceof Player player)) {
             return;
         }

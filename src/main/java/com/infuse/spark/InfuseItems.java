@@ -227,9 +227,9 @@ public class InfuseItems {
             InfuseItem.PRIMARY_THUNDER
         ));
 
-        items.put(InfuseItem.PRIMARY_PIG, createPotion(
-            "&d&lPig Effect",
-            Color.fromRGB(255, 105, 180),
+        items.put(InfuseItem.PRIMARY_PIGLIN, createPotion(
+            "&6&lThe Piglin Effect",
+            Color.fromRGB(255, 170, 51),
             List.of(
                 "&9Effect",
                 "&7After being hit 5 times gain &oSpeed III &7for 3s",
@@ -240,7 +240,25 @@ public class InfuseItems {
                 "",
                 "&8Duration: &340s &8Cooldown: &360s"
             ),
-            InfuseItem.PRIMARY_PIG
+            InfuseItem.PRIMARY_PIGLIN
+        ));
+
+        items.put(InfuseItem.PRIMARY_PIGLIN, createPotion(
+            "&6&lThe Piglin Effect",
+            Color.fromRGB(255, 170, 51),
+            List.of(
+                "&9Effect",
+                "&7Getting hit opens a 2s mark window",
+                "&7Your next hit in the window deals &o+0.75 hearts",
+                "&7Mark consumed on hit",
+                "",
+                "&9Spark Ability",
+                "&7Bloodmark window increases to 3s",
+                "&7Bloodmark hits deal &o+1.5 hearts",
+                "",
+                "&8Duration: &310s &8Cooldown: &360s"
+            ),
+            InfuseItem.PRIMARY_PIGLIN
         ));
 
         items.put(InfuseItem.PRIMARY_PIGLIN, createPotion(
@@ -355,7 +373,15 @@ public class InfuseItems {
             new Ingredient('d', Material.CREEPER_HEAD)
         );
 
-        registerRecipe("pig_effect", items.get(InfuseItem.PRIMARY_PIG),
+        registerRecipe("piglin_effect", items.get(InfuseItem.PRIMARY_PIGLIN),
+            "aba", "cdc", "aba",
+            new Ingredient('a', Material.PORKCHOP),
+            new Ingredient('b', Material.GOLDEN_CARROT),
+            new Ingredient('c', Material.SADDLE),
+            new Ingredient('d', Material.PIG_SPAWN_EGG)
+        );
+
+        registerRecipe("piglin_effect", items.get(InfuseItem.PRIMARY_PIGLIN),
             "aba", "cdc", "aba",
             new Ingredient('a', Material.PORKCHOP),
             new Ingredient('b', Material.GOLDEN_CARROT),
