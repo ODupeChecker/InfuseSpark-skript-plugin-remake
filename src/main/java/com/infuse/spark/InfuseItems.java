@@ -203,12 +203,14 @@ public class InfuseItems {
             Color.fromRGB(139, 0, 0),
             List.of(
                 "&9Effect",
-                "&7Grants &oAttack +2",
+                "&7Deal &o+0.5 hearts &7damage below &c6 hearts",
+                "&7Deal &o+2 hearts &7damage below &c4 hearts",
+                "&7Deal &o+3 hearts &7damage below &c2 hearts",
                 "",
                 "&9Spark Ability",
-                "&7Upgrades &oStrength I &7to &oAttack +3.5",
+                "&7All properly timed hits become &oCritical Hits",
                 "",
-                "&8Duration: &330s &8Cooldown: &3120s"
+                "&8Duration: &310s &8Cooldown: &360s"
             ),
             InfuseItem.PRIMARY_STRENGTH
         ));

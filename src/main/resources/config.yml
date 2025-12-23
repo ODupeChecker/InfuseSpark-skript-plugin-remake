@@ -10,15 +10,14 @@ infuses:
       action-bar-inactive: "\uE002"
       primary-color-active: "&4&l"
       primary-color-inactive: "&f&l"
-      attack-damage: 2.0
-      refresh-ticks: 4
+      bonus-damage-below-6-hearts: 1.0
+      bonus-damage-below-4-hearts: 4.0
+      bonus-damage-below-2-hearts: 6.0
     spark:
-      attack-damage: 1.5
-      refresh-ticks: 4
       cooldown-start-minutes: 0
-      cooldown-start-seconds: 30
-      duration-seconds: 30
-      cooldown-end-minutes: 2
+      cooldown-start-seconds: 10
+      duration-seconds: 10
+      cooldown-end-minutes: 1
       cooldown-end-seconds: 0
   heart:
     passive:
