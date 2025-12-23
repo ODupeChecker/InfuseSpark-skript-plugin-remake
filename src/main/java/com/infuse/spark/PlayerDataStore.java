@@ -66,6 +66,9 @@ public class PlayerDataStore {
     }
 
     private EffectGroup parseGroup(String value, EffectGroup fallback) {
+        if (value == null) {
+            return fallback;
+        }
         try {
             return EffectGroup.valueOf(value);
         } catch (IllegalArgumentException ex) {
