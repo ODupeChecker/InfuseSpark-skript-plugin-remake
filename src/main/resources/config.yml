@@ -237,12 +237,16 @@ infuses:
       action-bar-inactive: "\uE030"
       primary-color-active: "&6&l"
       primary-color-inactive: "&f&l"
+      mirror-chance: 0.4
+      echo-damage-multiplier: 0.8
     spark:
       cooldown-start-minutes: 0
-      cooldown-start-seconds: 10
-      duration-seconds: 10
-      cooldown-end-minutes: 0
-      cooldown-end-seconds: 30
+      cooldown-start-seconds: 6
+      duration-seconds: 6
+      cooldown-end-minutes: 1
+      cooldown-end-seconds: 0
+      mirror-chance: 1.0
+      echo-damage-multiplier: 0.9
   ocean:
     passive:
       action-bar-active: "\uE022&9&l"
