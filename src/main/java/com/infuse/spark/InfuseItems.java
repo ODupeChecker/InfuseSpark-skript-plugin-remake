@@ -30,7 +30,7 @@ public class InfuseItems {
         PRIMARY_REGENERATION,
         PRIMARY_STRENGTH,
         PRIMARY_THUNDER,
-        PRIMARY_PIGLIN
+        PRIMARY_PIG
     }
 
     private final InfuseSparkPlugin plugin;
@@ -226,22 +226,20 @@ public class InfuseItems {
             InfuseItem.PRIMARY_THUNDER
         ));
 
-        items.put(InfuseItem.PRIMARY_PIGLIN, createPotion(
-            "&6&lThe Piglin Effect",
-            Color.fromRGB(255, 170, 51),
+        items.put(InfuseItem.PRIMARY_PIG, createPotion(
+            "&d&lPig Effect",
+            Color.fromRGB(255, 105, 180),
             List.of(
                 "&9Effect",
-                "&7Getting hit opens a 2s mark window",
-                "&7Your next hit in the window deals &o+0.75 hearts",
-                "&7Mark consumed on hit",
+                "&7After being hit 5 times gain &oSpeed III &7for 5s",
+                "&7Take 5% less knockback",
                 "",
                 "&9Spark Ability",
-                "&7Bloodmark window increases to 3s",
-                "&7Bloodmark hits deal &o+1.5 hearts",
+                "&7Send out a barrage of exploding baby pigs",
                 "",
-                "&8Duration: &310s &8Cooldown: &360s"
+                "&8Duration: &31s &8Cooldown: &330s"
             ),
-            InfuseItem.PRIMARY_PIGLIN
+            InfuseItem.PRIMARY_PIG
         ));
     }
 
@@ -338,7 +336,7 @@ public class InfuseItems {
             new Ingredient('d', Material.CREEPER_HEAD)
         );
 
-        registerRecipe("piglin_effect", items.get(InfuseItem.PRIMARY_PIGLIN),
+        registerRecipe("pig_effect", items.get(InfuseItem.PRIMARY_PIG),
             "aba", "cdc", "aba",
             new Ingredient('a', Material.PORKCHOP),
             new Ingredient('b', Material.GOLDEN_CARROT),
