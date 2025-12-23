@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -170,17 +169,12 @@ public class OverdriveInfuse extends BaseInfuse {
     }
 
     private void applyAttackSpeed(Player player, int stacks, InfuseContext context) {
-        AttributeInstance instance = player.getAttribute(Attribute.GENERIC_ATTACK_SPEED);
-        if (instance == null) {
-            return;
-        }
         if (stacks <= 0) {
             context.removeAttributeModifier(player, Attribute.GENERIC_ATTACK_SPEED, OVERDRIVE_MODIFIER);
             return;
         }
-        double base = instance.getBaseValue();
-        double amount = base * STACK_BONUS * stacks;
-        context.applyAttributeModifier(player, Attribute.GENERIC_ATTACK_SPEED, OVERDRIVE_MODIFIER, amount);
+        double multiplier = STACK_BONUS * stacks;
+        context.applyMultiplicativeAttributeModifier(player, Attribute.GENERIC_ATTACK_SPEED, OVERDRIVE_MODIFIER, multiplier);
     }
 
     private void clearState(Player player, InfuseContext context) {

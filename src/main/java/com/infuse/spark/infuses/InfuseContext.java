@@ -56,6 +56,17 @@ public class InfuseContext {
         instance.addModifier(modifier);
     }
 
+    public void applyMultiplicativeAttributeModifier(Player player, Attribute attribute, UUID uuid, double multiplier) {
+        AttributeInstance instance = player.getAttribute(attribute);
+        if (instance == null) {
+            return;
+        }
+        removeAttributeModifier(player, attribute, uuid);
+        AttributeModifier modifier = new AttributeModifier(uuid, "infuse_mult_" + attribute.name(), multiplier,
+            AttributeModifier.Operation.MULTIPLY_SCALAR_1);
+        instance.addModifier(modifier);
+    }
+
     public void applyTemporaryAttributeModifier(Player player, Attribute attribute, UUID uuid, double amount, int ticks) {
         AttributeInstance instance = player.getAttribute(attribute);
         if (instance == null) {
