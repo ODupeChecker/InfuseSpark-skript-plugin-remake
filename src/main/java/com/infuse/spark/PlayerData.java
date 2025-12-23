@@ -237,4 +237,12 @@ public class PlayerData {
     public void setPigSparkPrimed(boolean pigSparkPrimed) {
         this.pigSparkPrimed = pigSparkPrimed;
     }
+
+    public boolean isPiglinSparkActive() {
+        return piglinSparkActive;
+    }
+
+    public void setPiglinSparkActive(boolean piglinSparkActive) {
+        this.piglinSparkActive = piglinSparkActive;
+    }
 }

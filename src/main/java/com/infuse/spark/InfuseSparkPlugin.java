@@ -643,6 +643,121 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         removeAttributeModifier(player, Attribute.GENERIC_KNOCKBACK_RESISTANCE, PIG_KNOCKBACK_MODIFIER);
     }
 
+    private void triggerPigSparkHeal(Player player, PlayerData data, int slot) {
+        if (!data.isPigSparkPrimed()) {
+            return;
+        }
+        data.setPigSparkPrimed(false);
+        setSlotActive(data, slot, false);
+        setSlotCooldown(data, slot, PIG_SPARK_COOLDOWN_SECONDS / 60, PIG_SPARK_COOLDOWN_SECONDS % 60);
+        Bukkit.getScheduler().runTask(this, () -> {
+            if (!player.isOnline() || player.isDead()) {
+                return;
+            }
+            AttributeInstance maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+            double max = maxHealth != null ? maxHealth.getValue() : 20.0;
+            player.setHealth(Math.min(max, player.getHealth() + 8.0));
+        });
+    }
+
+    private void handlePiglinMarkAttack(Player attacker, PlayerData data, EntityDamageByEntityEvent event) {
+        if (event.isCancelled()) {
+            return;
+        }
+        if (!(event.getEntity() instanceof Player target)) {
+            return;
+        }
+        if (data.getTrusted().contains(target.getUniqueId())) {
+            return;
+        }
+        UUID attackerId = attacker.getUniqueId();
+        UUID targetId = target.getUniqueId();
+        long now = System.currentTimeMillis();
+        Map<UUID, Long> marks = piglinMarks.computeIfAbsent(attackerId, id -> new HashMap<>());
+        Long markExpires = marks.get(targetId);
+        if (markExpires == null) {
+            return;
+        }
+        if (markExpires <= now) {
+            removePiglinMark(attackerId, targetId);
+            return;
+        }
+        double bonusDamage = data.isPiglinSparkActive() ? PIGLIN_BLOODMARK_DAMAGE : PIGLIN_MARK_DAMAGE;
+        event.setDamage(event.getDamage() + bonusDamage);
+        removePiglinMark(attackerId, targetId);
+    }
+
+    private void addPiglinMark(UUID attackerId, Player target, int durationSeconds) {
+        Map<UUID, Long> marks = piglinMarks.computeIfAbsent(attackerId, id -> new HashMap<>());
+        UUID targetId = target.getUniqueId();
+        if (marks.containsKey(targetId)) {
+            return;
+        }
+        long expiresAt = System.currentTimeMillis() + (durationSeconds * 1000L);
+        marks.put(targetId, expiresAt);
+        adjustPiglinGlow(targetId, 1);
+        Bukkit.getScheduler().runTaskLater(this, () -> {
+            Map<UUID, Long> current = piglinMarks.get(attackerId);
+            if (current == null) {
+                return;
+            }
+            Long currentExpires = current.get(targetId);
+            if (currentExpires != null && currentExpires <= System.currentTimeMillis()) {
+                removePiglinMark(attackerId, targetId);
+            }
+        }, durationSeconds * TICKS_PER_SECOND);
+    }
+
+    private void removePiglinMark(UUID attackerId, UUID targetId) {
+        Map<UUID, Long> marks = piglinMarks.get(attackerId);
+        if (marks == null) {
+            return;
+        }
+        if (marks.remove(targetId) != null) {
+            adjustPiglinGlow(targetId, -1);
+        }
+        if (marks.isEmpty()) {
+            piglinMarks.remove(attackerId);
+        }
+    }
+
+    private void adjustPiglinGlow(UUID targetId, int delta) {
+        int next = piglinGlowCounts.getOrDefault(targetId, 0) + delta;
+        if (next <= 0) {
+            piglinGlowCounts.remove(targetId);
+            Player target = Bukkit.getPlayer(targetId);
+            if (target != null) {
+                target.setGlowing(false);
+            }
+            return;
+        }
+        piglinGlowCounts.put(targetId, next);
+        Player target = Bukkit.getPlayer(targetId);
+        if (target != null) {
+            target.setGlowing(true);
+        }
+    }
+
+    private void clearPiglinAttackerState(UUID attackerId) {
+        Map<UUID, Long> marks = piglinMarks.remove(attackerId);
+        if (marks == null) {
+            return;
+        }
+        for (UUID targetId : marks.keySet()) {
+            adjustPiglinGlow(targetId, -1);
+        }
+    }
+
+    private void clearPiglinTargetState(UUID targetId) {
+        for (UUID attackerId : Set.copyOf(piglinMarks.keySet())) {
+            Map<UUID, Long> marks = piglinMarks.get(attackerId);
+            if (marks == null || !marks.containsKey(targetId)) {
+                continue;
+            }
+            removePiglinMark(attackerId, targetId);
+        }
+    }
+
     private boolean handleInfuseCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player player)) {
             sender.sendMessage("Player only.");
