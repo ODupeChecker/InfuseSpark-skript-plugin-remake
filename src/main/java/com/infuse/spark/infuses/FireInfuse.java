@@ -4,6 +4,8 @@ import com.infuse.spark.EffectGroup;
 import com.infuse.spark.InfuseItems.InfuseItem;
 import com.infuse.spark.PlayerData;
 import com.infuse.spark.SlotHelper;
+import java.util.HashSet;
+import java.util.Set;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -86,15 +88,20 @@ public class FireInfuse extends BaseInfuse {
             return;
         }
         double fireballDamageHearts = getDouble(context, SPARK_SECTION, "fireball-true-damage-hearts", 3.5);
-        applyTrueDamage(target, fireballDamageHearts);
-        double radius = getDouble(context, SPARK_SECTION, "fireball-ignite-radius", 5.0);
-        applyIgnite(target, context);
+        double radius = getDouble(context, SPARK_SECTION, "fireball-ignite-radius", 4.5);
+        Set<LivingEntity> affectedEntities = new HashSet<>();
+        affectedEntities.add(target);
         target.getWorld().getNearbyEntities(target.getLocation(), radius, radius, radius).stream()
             .filter(entity -> entity instanceof LivingEntity)
             .map(entity -> (LivingEntity) entity)
+            .forEach(affectedEntities::add);
+        affectedEntities.stream()
             .filter(entity -> !entity.getUniqueId().equals(shooter.getUniqueId()))
-            .forEach(entity -> applyIgnite(entity, context));
-        applyIgnitedBonus(target, context);
+            .forEach(entity -> {
+                applyTrueDamage(entity, fireballDamageHearts);
+                applyIgnite(entity, context);
+                applyIgnitedBonus(entity, context);
+            });
     }
 
     private void launchFireball(Player player, InfuseContext context) {

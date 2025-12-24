@@ -283,7 +283,7 @@ infuses:
       cooldown-start-seconds: 30
       duration-seconds: 1
       fireball-true-damage-hearts: 3.5
-      fireball-ignite-radius: 5.0
+      fireball-ignite-radius: 4.5
       fireball-speed: 1.0
       cooldown-end-minutes: 1
       cooldown-end-seconds: 0
