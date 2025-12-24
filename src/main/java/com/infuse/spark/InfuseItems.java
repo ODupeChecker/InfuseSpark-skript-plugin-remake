@@ -80,14 +80,14 @@ public class InfuseItems {
             Color.BLUE,
             List.of(
                 "&9Effect",
-                "&7Grants &oDolphin's Grace",
-                "&7Grants &oConduit Power",
-                "&7&o+2 Attack Damage while &9in water",
+                "&7Every hit applies &bSalted &7for &o3s",
+                "&7Salted enemies take &c+5% damage",
                 "",
                 "&9Spark Ability",
-                "&7Regenerate health while &9in water",
+                "&7Release a &b9-block water wave",
+                "&7Players hit are knocked away",
                 "",
-                "&8Duration: &330s &8Cooldown: &360s"
+                "&8Duration: &32s &8Cooldown: &360s"
             ),
             InfuseItem.SUPPORT_OCEAN
         ));
