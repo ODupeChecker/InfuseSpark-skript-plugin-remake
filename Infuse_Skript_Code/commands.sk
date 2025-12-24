@@ -32,7 +32,7 @@ command /infuse:infusespark [<text>] [<text>] [<text>] [<text>] [<text>] [<text>
                     set {Spork3r::Infuse::Primary::%player's uuid%} to 2
                 else if arg-3 is "haste":
                     set {Spork3r::Infuse::Primary::%player's uuid%} to 3
-                else if arg-3 is "invisibility":
+                else if arg-3 is "ninja":
                     set {Spork3r::Infuse::Primary::%player's uuid%} to 4
                 else if arg-3 is "feather":
                     set {Spork3r::Infuse::Primary::%player's uuid%} to 5
@@ -64,7 +64,7 @@ on tab complete for "/infusespark" and "/skript:infusespark" and "/infuse:infuse
     if tab arg-1 = "equip":
         set tab completions for position 2 to "primary" and "support"
         if tab arg-2 = "primary":
-            set tab completions for position 3 to "empty" and "strength" and "heart" and "haste" and "invisibility" and "feather" and "frost" and "thunder" and "regeneration"
+            set tab completions for position 3 to "empty" and "strength" and "heart" and "haste" and "ninja" and "feather" and "frost" and "thunder" and "regeneration"
         else if tab arg-2 = "support":
             set tab completions for position 3 to "empty" and "ocean" and "fire" and "emerald" and "speed"
 

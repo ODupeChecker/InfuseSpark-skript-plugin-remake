@@ -602,7 +602,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             }
             if (args.length == 4 && args[0].equalsIgnoreCase("spark") && args[1].equalsIgnoreCase("equip")) {
                 if (args[2].equalsIgnoreCase("effect")) {
-                    return List.of("empty", "strength", "heart", "haste", "invisibility", "feather", "frost", "thunder", "regeneration",
+                    return List.of("empty", "strength", "heart", "haste", "ninja", "feather", "frost", "thunder", "regeneration",
                         "pig", "piglin", "overdrive", "ocean", "fire", "emerald", "speed");
                 }
             }

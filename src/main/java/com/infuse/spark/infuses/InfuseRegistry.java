@@ -41,7 +41,7 @@ public class InfuseRegistry {
         register(new StrengthInfuse());
         register(new HeartInfuse());
         register(new HasteInfuse());
-        register(new InvisibilityInfuse());
+        register(new NinjaInfuse());
         register(new FeatherInfuse());
         register(new FrostInfuse());
         register(new ThunderInfuse());

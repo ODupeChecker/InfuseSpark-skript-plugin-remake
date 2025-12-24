@@ -115,11 +115,11 @@ on load:
             set ingredient of "b" to diamond block
             set ingredient of "c" to enchanted golden apple
             
-    set {Spork3r::Infuse::Items::Primary::Invisibility} to potion of unbreaking 1 named "&7Invisibility Effect" with lore "&9Primary Effect" and "&7Grants &oInvisibility" and "" and "&9Spark Ability" and "&7Hides armor and particles" and "" and "&8Duration: &320s &8Cooldown: &3645s"  with all item flags
-    color {Spork3r::Infuse::Items::Primary::Invisibility} purple
+    set {Spork3r::Infuse::Items::Primary::Ninja} to potion of unbreaking 1 named "&7Ninja Effect" with lore "&9Primary Effect" and "&7Stand still &o5s &7for &oTRUE invisibility" and "&7Timer starts on movement; hits deal &c+30% damage" and "&7Gain &bSpeed III &7for &o4s &7when it starts" and "" and "&9Spark Ability" and "&715s TRUE invisibility, &c+50% damage" and "&7Gain &bSpeed III &7for &o4s &7and take &c+90% &7damage with iron dust trail" and "" and "&8Passive CD: &330s &8Spark CD: &31m30s"  with all item flags
+    color {Spork3r::Infuse::Items::Primary::Ninja} purple
     register shaped recipe:
-        id: "infuse_spark:invisibility_effect"
-        result: {Spork3r::Infuse::Items::Primary::Invisibility}
+        id: "infuse_spark:ninja_effect"
+        result: {Spork3r::Infuse::Items::Primary::Ninja}
         shape: "aba", "bcb", "aba"
         category: "misc"
         ingredients:
@@ -202,7 +202,7 @@ function Spork3rInfuseIconSetAndPassive(p: player):
         else if {Spork3r::Infuse::Primary::%{_p}'s uuid%} is 4:
             set {Spork3r::Infuse::ActionBar::Primary::%{_p}'s uuid%} to ""
             set {Spork3r::Infuse::Primary::ColorCode::%{_p}'s uuid%} to "&5&l"
-            Spork3rInfusePrimaryInvisibilityEquipped({_p})
+            Spork3rInfusePrimaryNinjaEquipped({_p})
         else if {Spork3r::Infuse::Primary::%{_p}'s uuid%} is 5:
             set {Spork3r::Infuse::ActionBar::Primary::%{_p}'s uuid%} to ""
             set {Spork3r::Infuse::Primary::ColorCode::%{_p}'s uuid%} to "&2&l"
@@ -239,7 +239,7 @@ function Spork3rInfuseIconSetAndPassive(p: player):
         else if {Spork3r::Infuse::Primary::%{_p}'s uuid%} is 4:
             set {Spork3r::Infuse::ActionBar::Primary::%{_p}'s uuid%} to ""
             set {Spork3r::Infuse::Primary::ColorCode::%{_p}'s uuid%} to "&f&l"
-            Spork3rInfusePrimaryInvisibilityEquipped({_p})
+            Spork3rInfusePrimaryNinjaEquipped({_p})
         else if {Spork3r::Infuse::Primary::%{_p}'s uuid%} is 5:
             set {Spork3r::Infuse::ActionBar::Primary::%{_p}'s uuid%} to ""
             set {Spork3r::Infuse::Primary::ColorCode::%{_p}'s uuid%} to "&f&l"
@@ -318,7 +318,7 @@ on death of player:
         else if {Spork3r::Infuse::Primary::%victim's uuid%} is 3:
             drop {Spork3r::Infuse::Items::Primary::Haste}
         else if {Spork3r::Infuse::Primary::%victim's uuid%} is 4:
-            drop {Spork3r::Infuse::Items::Primary::Invisibility}
+            drop {Spork3r::Infuse::Items::Primary::Ninja}
         else if {Spork3r::Infuse::Primary::%victim's uuid%} is 5:
             drop {Spork3r::Infuse::Items::Primary::Feather}
         else if {Spork3r::Infuse::Primary::%victim's uuid%} is 6:
