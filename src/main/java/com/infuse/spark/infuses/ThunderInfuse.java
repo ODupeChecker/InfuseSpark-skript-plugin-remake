@@ -4,16 +4,20 @@ import com.infuse.spark.EffectGroup;
 import com.infuse.spark.InfuseItems.InfuseItem;
 import com.infuse.spark.PlayerData;
 import com.infuse.spark.SlotHelper;
-import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class ThunderInfuse extends BaseInfuse {
+    private static final int EFFECT_ID = 7;
+    private static final double PASSIVE_TRUE_DAMAGE_HEARTS = 0.5;
+    private static final double SPARK_TRUE_DAMAGE_HEARTS = 3.0;
+
     public ThunderInfuse() {
-        super(EffectGroup.PRIMARY, 7, "thunder", InfuseItem.PRIMARY_THUNDER);
+        super(EffectGroup.PRIMARY, EFFECT_ID, "thunder", InfuseItem.PRIMARY_THUNDER);
     }
 
     @Override
@@ -35,58 +39,113 @@ public class ThunderInfuse extends BaseInfuse {
         int startSeconds = getInt(context, SPARK_SECTION, "cooldown-start-seconds", 0);
         SlotHelper.setSlotCooldown(data, slot, startMinutes, startSeconds);
         int radius = getInt(context, SPARK_SECTION, "lightning-radius", 0);
-        int strikeCount = getInt(context, SPARK_SECTION, "strike-count", 0);
         int endMinutes = getInt(context, SPARK_SECTION, "cooldown-end-minutes", 0);
         int endSeconds = getInt(context, SPARK_SECTION, "cooldown-end-seconds", 0);
+        strikeNearby(player, data, radius, context);
+        long activeTicks = Math.max(0L, ((startMinutes * 60L) + startSeconds) * context.ticksPerSecond());
+        if (activeTicks <= 0L) {
+            SlotHelper.setSlotActive(data, slot, false);
+            SlotHelper.setSlotCooldown(data, slot, endMinutes, endSeconds);
+            return;
+        }
         new BukkitRunnable() {
-            int count = 0;
-
             @Override
             public void run() {
-                if (!player.isOnline()) {
-                    cancel();
-                    return;
-                }
-                for (Entity entity : player.getNearbyEntities(radius, radius, radius)) {
-                    if (entity.getUniqueId().equals(player.getUniqueId())) {
-                        continue;
-                    }
-                    if (entity instanceof Player target && data.getTrusted().contains(target.getUniqueId())) {
-                        continue;
-                    }
-                    entity.getWorld().strikeLightning(entity.getLocation());
-                }
-                count++;
-                if (count >= strikeCount) {
-                    SlotHelper.setSlotActive(data, slot, false);
-                    SlotHelper.setSlotCooldown(data, slot, endMinutes, endSeconds);
-                    cancel();
-                }
+                SlotHelper.setSlotActive(data, slot, false);
+                SlotHelper.setSlotCooldown(data, slot, endMinutes, endSeconds);
             }
-        }.runTaskTimer(context.getPlugin(), 0L, context.ticksPerSecond());
+        }.runTaskLater(context.getPlugin(), activeTicks);
     }
 
     @Override
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event, PlayerData data, InfuseContext context) {
+        if (event.isCancelled()) {
+            return;
+        }
         if (!(event.getDamager() instanceof Player player)) {
             return;
         }
-        boolean critLightning = getBoolean(context, PASSIVE_SECTION, "crit-lightning", false);
-        if (SlotHelper.hasEffect(data, EffectGroup.PRIMARY, 7) && event.isCritical() && critLightning) {
-            Bukkit.getScheduler().runTask(context.getPlugin(), () -> event.getEntity().getWorld().strikeLightning(event.getEntity().getLocation()));
+        if (!data.getUuid().equals(player.getUniqueId())) {
+            return;
         }
+        if (!SlotHelper.hasEffect(data, EffectGroup.PRIMARY, EFFECT_ID)) {
+            return;
+        }
+        if (!(event.getEntity() instanceof LivingEntity target)) {
+            return;
+        }
+        if (target instanceof Player targetPlayer && data.getTrusted().contains(targetPlayer.getUniqueId())) {
+            return;
+        }
+        int hitsToStrike = getInt(context, PASSIVE_SECTION, "hits-to-strike", 10);
+        int hitCount = data.getThunderHitCount() + 1;
+        if (hitsToStrike > 0 && hitCount >= hitsToStrike) {
+            triggerLightningStrike(target, context, PASSIVE_TRUE_DAMAGE_HEARTS);
+            hitCount = 0;
+        }
+        data.setThunderHitCount(hitCount);
     }
 
     @Override
-    public void onEntityDamage(EntityDamageEvent event, PlayerData data, InfuseContext context) {
-        if (!(event.getEntity() instanceof Player player)) {
+    public void onPlayerQuit(org.bukkit.event.player.PlayerQuitEvent event, PlayerData data, InfuseContext context) {
+        data.setThunderHitCount(0);
+    }
+
+    @Override
+    public void onDisable(Player player, PlayerData data, InfuseContext context) {
+        data.setThunderHitCount(0);
+    }
+
+    private void strikeNearby(Player player, PlayerData data, int radius, InfuseContext context) {
+        for (Entity entity : player.getNearbyEntities(radius, radius, radius)) {
+            if (!(entity instanceof LivingEntity living)) {
+                continue;
+            }
+            if (entity.getUniqueId().equals(player.getUniqueId())) {
+                continue;
+            }
+            if (entity instanceof Player target && data.getTrusted().contains(target.getUniqueId())) {
+                continue;
+            }
+            triggerLightningStrike(living, context, SPARK_TRUE_DAMAGE_HEARTS);
+            applyCameraLock(entity, context);
+        }
+    }
+
+    private void triggerLightningStrike(LivingEntity target, InfuseContext context, double trueDamageHearts) {
+        Location strikeLocation = target.getLocation();
+        strikeLocation.getWorld().strikeLightningEffect(strikeLocation);
+        applyTrueDamage(target, trueDamageHearts);
+    }
+
+    private void applyTrueDamage(LivingEntity target, double hearts) {
+        if (hearts <= 0) {
             return;
         }
-        boolean lightningImmunity = getBoolean(context, PASSIVE_SECTION, "lightning-immunity", false);
-        if (SlotHelper.hasEffect(data, EffectGroup.PRIMARY, 7)
-            && event.getCause() == EntityDamageEvent.DamageCause.LIGHTNING
-            && lightningImmunity) {
-            event.setCancelled(true);
+        double healthLoss = hearts * 2.0;
+        double health = target.getHealth();
+        target.setHealth(Math.max(0.0, health - healthLoss));
+    }
+
+    private void applyCameraLock(Entity entity, InfuseContext context) {
+        if (!(entity instanceof Player target)) {
+            return;
         }
+        float yaw = target.getLocation().getYaw();
+        float pitch = target.getLocation().getPitch();
+        int durationTicks = 5 * context.ticksPerSecond();
+        new BukkitRunnable() {
+            int ticks;
+
+            @Override
+            public void run() {
+                if (!target.isOnline() || target.isDead() || ticks >= durationTicks) {
+                    cancel();
+                    return;
+                }
+                target.setRotation(yaw, pitch);
+                ticks++;
+            }
+        }.runTaskTimer(context.getPlugin(), 0L, 1L);
     }
 }
