@@ -157,13 +157,15 @@ infuses:
       action-bar-inactive: "\uE008"
       primary-color-active: "&9&l"
       primary-color-inactive: "&f&l"
-      crit-lightning: true
+      hits-to-strike: 10
+      lightning-true-damage-hearts: 0.5
       lightning-immunity: true
     spark:
       cooldown-start-minutes: 0
       cooldown-start-seconds: 10
-      lightning-radius: 16
-      strike-count: 10
+      lightning-radius: 8
+      lightning-true-damage-hearts: 3
+      camera-lock-duration-seconds: 5
       cooldown-end-minutes: 1
       cooldown-end-seconds: 20
   regeneration:
@@ -246,6 +248,7 @@ infuses:
       cooldown-end-seconds: 0
       mirror-chance: 1.0
       echo-damage-multiplier: 0.9
+      primary-color-spark: "&b&l"
   ocean:
     passive:
       action-bar-active: "\uE022&9&l"
