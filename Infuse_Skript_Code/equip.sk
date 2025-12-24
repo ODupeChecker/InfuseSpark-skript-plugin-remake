@@ -27,7 +27,7 @@ on drink:
             set {Spork3r::Infuse::Primary::%player's uuid%} to 2
         else if {_2ndline} contains "Haste II":
             set {Spork3r::Infuse::Primary::%player's uuid%} to 3
-        else if {_2ndline} contains "Invisibility":
+        else if {_2ndline} contains "TRUE invisibility":
             set {Spork3r::Infuse::Primary::%player's uuid%} to 4
         else if {_2ndline} contains "No fall damage":
             set {Spork3r::Infuse::Primary::%player's uuid%} to 5
@@ -73,7 +73,7 @@ function Spork3rInfuseUnequipPrimary(p: player):
     else if {Spork3r::Infuse::Primary::%{_p}'s uuid%} is 3:
         give {Spork3r::Infuse::Items::Primary::Haste} to {_p}
     else if {Spork3r::Infuse::Primary::%{_p}'s uuid%} is 4:
-        give {Spork3r::Infuse::Items::Primary::Invisibility} to {_p}
+        give {Spork3r::Infuse::Items::Primary::Ninja} to {_p}
     else if {Spork3r::Infuse::Primary::%{_p}'s uuid%} is 5:
         give {Spork3r::Infuse::Items::Primary::Feather} to {_p}
     else if {Spork3r::Infuse::Primary::%{_p}'s uuid%} is 6:

@@ -26,7 +26,7 @@ public class InfuseItems {
         PRIMARY_FROST,
         PRIMARY_HASTE,
         PRIMARY_HEART,
-        PRIMARY_INVISIBILITY,
+        PRIMARY_NINJA,
         PRIMARY_REGENERATION,
         PRIMARY_STRENGTH,
         PRIMARY_THUNDER,
@@ -169,19 +169,21 @@ public class InfuseItems {
             InfuseItem.PRIMARY_HEART
         ));
 
-        items.put(InfuseItem.PRIMARY_INVISIBILITY, createPotion(
-            "&7Invisibility Effect",
+        items.put(InfuseItem.PRIMARY_NINJA, createPotion(
+            "&7Ninja Effect",
             Color.PURPLE,
             List.of(
                 "&9Effect",
-                "&7Grants &oInvisibility",
+                "&7Stand still &o5s &7to gain &oTRUE invisibility",
+                "&7Timer starts when you move; hits deal &c+30% damage",
                 "",
                 "&9Spark Ability",
-                "&7Hides armor and particles",
+                "&715s of TRUE invisibility with &c+50% damage",
+                "&7Takes &c+90% &7damage; leaves iron dust trail",
                 "",
-                "&8Duration: &320s &8Cooldown: &3645s"
+                "&8Passive CD: &330s &8Spark CD: &31m30s"
             ),
-            InfuseItem.PRIMARY_INVISIBILITY
+            InfuseItem.PRIMARY_NINJA
         ));
 
         items.put(InfuseItem.PRIMARY_REGENERATION, createPotion(
@@ -345,7 +347,7 @@ public class InfuseItems {
             new Ingredient('c', Material.ENCHANTED_GOLDEN_APPLE)
         );
 
-        registerRecipe("invisibility_effect", items.get(InfuseItem.PRIMARY_INVISIBILITY),
+        registerRecipe("ninja_effect", items.get(InfuseItem.PRIMARY_NINJA),
             "aba", "bcb", "aba",
             new Ingredient('a', Material.ENDER_EYE),
             new Ingredient('b', Material.SCULK_SHRIEKER),

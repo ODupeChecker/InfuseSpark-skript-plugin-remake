@@ -73,7 +73,7 @@ infuses:
       duration-seconds: 45
       cooldown-end-minutes: 1
       cooldown-end-seconds: 15
-  invisibility:
+  ninja:
     passive:
       action-bar-active: "\uE017"
       action-bar-inactive: "\uE005"
@@ -81,14 +81,25 @@ infuses:
       primary-color-inactive: "&f&l"
       potion-level: 1
       potion-duration-seconds: 2
-      potion-particles: true
+      potion-particles: false
       potion-icon: true
+      still-seconds: 5
+      true-duration-seconds: 4
+      cooldown-seconds: 30
+      passive-damage-bonus: 0.3
+      activation-sound: "BLOCK_AMETHYST_BLOCK_CHIME"
+      activation-sound-volume: 1.0
+      activation-sound-pitch: 1.2
     spark:
       cooldown-start-minutes: 0
-      cooldown-start-seconds: 20
-      duration-seconds: 20
-      cooldown-end-minutes: 0
-      cooldown-end-seconds: 45
+      cooldown-start-seconds: 15
+      duration-seconds: 15
+      cooldown-end-minutes: 1
+      cooldown-end-seconds: 30
+      outgoing-damage-bonus: 0.5
+      incoming-damage-bonus: 0.9
+      particle-count: 8
+      particle-offset: 0.2
   feather:
     passive:
       action-bar-active: "\uE018"
