@@ -189,12 +189,13 @@ public class InfuseItems {
             Color.RED,
             List.of(
                 "&9Effect",
-                "&7Grants &oRegeneration II &7when attacking enemies",
+                "&7Hitting enemies grants &oRegeneration II &7for &o1s",
                 "",
                 "&9Spark Ability",
-                "&7Regenerate self and teammates in a 16 block radius",
+                "&7Heal for &o25% &7of the health lost by enemies you hit",
+                "&7Lasts &o20s",
                 "",
-                "&8Duration: &315s &8Cooldown: &3150s"
+                "&8Duration: &320s &8Cooldown: &31m10s"
             ),
             InfuseItem.PRIMARY_REGENERATION
         ));

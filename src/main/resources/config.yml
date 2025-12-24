@@ -164,21 +164,17 @@ infuses:
       action-bar-inactive: "\uE009"
       primary-color-active: "&c&l"
       primary-color-inactive: "&f&l"
-      crit-potion-level: 2
-      crit-potion-duration-seconds: 4
-      crit-potion-particles: false
-      crit-potion-icon: false
+      hit-potion-level: 2
+      hit-potion-duration-seconds: 1
+      hit-potion-particles: false
+      hit-potion-icon: false
     spark:
       cooldown-start-minutes: 0
-      cooldown-start-seconds: 15
-      tick-potion-level: 2
-      tick-potion-duration-seconds: 3
-      tick-potion-particles: false
-      tick-potion-icon: false
-      trusted-radius: 16
-      tick-count: 15
+      cooldown-start-seconds: 20
+      duration-seconds: 20
+      heal-percent: 0.25
       cooldown-end-minutes: 1
-      cooldown-end-seconds: 20
+      cooldown-end-seconds: 10
   pig:
     passive:
       action-bar-active: "\uE027"
