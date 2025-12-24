@@ -30,8 +30,14 @@ public class OverdriveInfuse extends BaseInfuse {
         SlotHelper.setSlotActionBar(data, slot, active ? activeIcon : inactiveIcon);
         if (slot == 1) {
             String activeColor = getString(context, PASSIVE_SECTION, "primary-color-active", "");
+            String sparkColor = getString(context, SPARK_SECTION, "primary-color-spark", activeColor);
             String inactiveColor = getString(context, PASSIVE_SECTION, "primary-color-inactive", "");
-            data.setPrimaryColorCode(active ? activeColor : inactiveColor);
+            OverdriveState state = getState(player.getUniqueId());
+            if (state.sparkActive) {
+                data.setPrimaryColorCode(sparkColor);
+            } else {
+                data.setPrimaryColorCode(active ? activeColor : inactiveColor);
+            }
         }
     }
 

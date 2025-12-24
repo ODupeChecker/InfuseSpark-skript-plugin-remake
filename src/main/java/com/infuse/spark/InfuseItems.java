@@ -221,10 +221,12 @@ public class InfuseItems {
             Color.YELLOW,
             List.of(
                 "&9Effect",
-                "&7Strikes attacked players with &6Lightning",
+                "&7Strike enemies with &6Lightning &7every &o10 hits",
+                "&7Lightning deals &o0.5 hearts &7of true damage",
                 "",
                 "&9Spark Ability",
-                "&7Smite enemies within a 16 block radius",
+                "&7Smite enemies within an 8 block radius",
+                "&7Struck enemies are camera locked for &o5s",
                 "",
                 "&8Duration: &310s &8Cooldown: &3120s"
             ),
