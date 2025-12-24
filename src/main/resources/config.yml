@@ -25,13 +25,13 @@ infuses:
       action-bar-inactive: "\uE003"
       primary-color-active: "&5&l"
       primary-color-inactive: "&f&l"
-      max-health: 10.0
+      max-health: 6.0
     spark:
-      max-health: 10.0
-      cooldown-start-minutes: 0
-      cooldown-start-seconds: 30
-      duration-seconds: 30
-      cooldown-end-minutes: 1
+      max-health: 6.0
+      cooldown-start-minutes: 1
+      cooldown-start-seconds: 20
+      duration-seconds: 80
+      cooldown-end-minutes: 2
       cooldown-end-seconds: 0
   haste:
     passive:

@@ -47,6 +47,9 @@ public class HeartInfuse extends BaseInfuse {
             context.removeAttributeModifier(player, Attribute.GENERIC_MAX_HEALTH, HEART_EQUIP_MODIFIER);
             heartEquipApplied.remove(player.getUniqueId());
         }
+        if (!SlotHelper.isEffectActive(data, EffectGroup.PRIMARY, 2)) {
+            context.removeAttributeModifier(player, Attribute.GENERIC_MAX_HEALTH, HEART_SPARK_MODIFIER);
+        }
     }
 
     @Override
@@ -57,6 +60,10 @@ public class HeartInfuse extends BaseInfuse {
         SlotHelper.setSlotCooldown(data, slot, startMinutes, startSeconds);
         double sparkHealth = getDouble(context, SPARK_SECTION, "max-health", 0.0);
         context.applyAttributeModifier(player, Attribute.GENERIC_MAX_HEALTH, HEART_SPARK_MODIFIER, sparkHealth);
+        org.bukkit.attribute.AttributeInstance maxHealth = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+        if (maxHealth != null) {
+            player.setHealth(maxHealth.getValue());
+        }
         int durationSeconds = getInt(context, SPARK_SECTION, "duration-seconds", 0);
         int endMinutes = getInt(context, SPARK_SECTION, "cooldown-end-minutes", 0);
         int endSeconds = getInt(context, SPARK_SECTION, "cooldown-end-seconds", 0);
