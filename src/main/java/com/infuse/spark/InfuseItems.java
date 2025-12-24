@@ -63,13 +63,14 @@ public class InfuseItems {
             Color.ORANGE,
             List.of(
                 "&9Effect",
-                "&7Grants &oFire Resistance",
-                "&7&o+1 Attack Damage while &6on fire",
+                "&7Every &o10 hits &7ignite enemies for &o4s",
+                "&7Deal &c+0.5❤ true damage &7to ignited enemies",
                 "",
                 "&9Spark Ability",
-                "&7Regenerate health while &6on fire",
+                "&7Shoot a fireball that deals &c3.5❤ true damage",
+                "&7Ignites enemies within &o5 blocks &7for &o4s",
                 "",
-                "&8Duration: &330s &8Cooldown: &360s"
+                "&8Duration: &31s &8Cooldown: &360s"
             ),
             InfuseItem.SUPPORT_FIRE
         ));

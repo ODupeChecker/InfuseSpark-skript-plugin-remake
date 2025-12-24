@@ -275,22 +275,18 @@ infuses:
     passive:
       action-bar-active: "\uE023&6&l"
       action-bar-inactive: "\uE011&f&l"
-      attack-damage: 1.0
-      attack-damage-refresh-ticks: 20
-      fire-resistance-level: 1
-      fire-resistance-duration-seconds: 1
-      fire-resistance-particles: false
-      fire-resistance-icon: true
+      hits-to-ignite: 10
+      ignite-duration-seconds: 4
+      ignited-true-damage-hearts: 0.5
     spark:
       cooldown-start-minutes: 0
       cooldown-start-seconds: 30
-      duration-seconds: 30
+      duration-seconds: 1
+      fireball-true-damage-hearts: 3.5
+      fireball-ignite-radius: 5.0
+      fireball-speed: 1.0
       cooldown-end-minutes: 1
       cooldown-end-seconds: 0
-      regen-level: 1
-      regen-duration-seconds: 2
-      regen-particles: false
-      regen-icon: false
   emerald:
     passive:
       action-bar-active: "\uE024&a&l"
