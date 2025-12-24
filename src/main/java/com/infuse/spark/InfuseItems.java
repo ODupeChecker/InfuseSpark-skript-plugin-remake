@@ -112,13 +112,13 @@ public class InfuseItems {
             Color.fromRGB(192, 192, 192),
             List.of(
                 "&9Effect",
-                "&7No fall damage",
-                "&7Can run on &cWater&7, &6Lava&7, &3Ice&7, & &3Snow",
+                "&75% chance to inflict &oLevitation (amp 2) &7for &o2s on hit",
                 "",
                 "&9Spark Ability",
-                "&7Burst of &oLevitation XXX",
+                "&7Enemies within &o8 blocks &7enter a",
+                "&73x levitation cycle (&o2s up, 0.7s down)",
                 "",
-                "&8Duration: &32s &8Cooldown: &330s"
+                "&8Duration: &39s &8Cooldown: &330s"
             ),
             InfuseItem.PRIMARY_FEATHER
         ));

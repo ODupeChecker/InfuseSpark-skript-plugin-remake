@@ -95,28 +95,22 @@ infuses:
       action-bar-inactive: "\uE006"
       primary-color-active: "&2&l"
       primary-color-inactive: "&f&l"
-      liquid-materials:
-        - WATER
-        - LAVA
-      liquid-check-depths:
-        - 1
-        - 2
-        - 3
-      require-head-clear: true
-      freeze-radius-xz: 2
-      freeze-radius-y: 1
-      water-replace: ICE
-      lava-replace: OBSIDIAN
-      freeze-revert-delay-seconds: 3
-      stand-check-interval-ticks: 1
+      levitation-chance: 0.05
+      levitation-duration-seconds: 2.0
+      levitation-amplifier: 2
+      levitation-particles: false
+      levitation-icon: false
     spark:
-      potion-level: 30
-      potion-duration-seconds: 2
-      potion-particles: false
-      potion-icon: false
       cooldown-start-minutes: 0
-      cooldown-start-seconds: 2
-      duration-seconds: 2
+      cooldown-start-seconds: 9
+      duration-seconds: 9
+      levitation-radius: 8.0
+      cycles: 3
+      levitation-duration-seconds: 2.0
+      drop-duration-seconds: 0.7
+      levitation-amplifier: 2
+      levitation-particles: false
+      levitation-icon: false
       cooldown-end-minutes: 0
       cooldown-end-seconds: 30
   frost:
