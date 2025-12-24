@@ -85,12 +85,13 @@ infuses:
       potion-icon: true
       still-seconds: 5
       true-duration-seconds: 4
-      cooldown-seconds: 30
+      cooldown-seconds: 0
       passive-damage-bonus: 0.3
       activation-sound: "BLOCK_AMETHYST_BLOCK_CHIME"
       activation-sound-volume: 1.0
       activation-sound-pitch: 1.2
       speed-level: 3
+      speed-burst-seconds: 4
       speed-particles: false
       speed-icon: true
     spark:
@@ -104,6 +105,7 @@ infuses:
       particle-count: 8
       particle-offset: 0.2
       speed-level: 3
+      speed-burst-seconds: 4
       speed-particles: false
       speed-icon: true
   feather:

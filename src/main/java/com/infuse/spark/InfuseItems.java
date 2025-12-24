@@ -176,11 +176,11 @@ public class InfuseItems {
                 "&9Effect",
                 "&7Stand still &o5s &7to gain &oTRUE invisibility",
                 "&7Timer starts when you move; hits deal &c+30% damage",
-                "&7Gain &bSpeed III &7for the true invis duration",
+                "&7Gain &bSpeed III &7burst for &o4s &7on activation",
                 "",
                 "&9Spark Ability",
                 "&715s of TRUE invisibility with &c+50% damage",
-                "&7Gain &bSpeed III &7but take &c+90% &7damage",
+                "&7Gain &bSpeed III &7for &o4s &7and take &c+90% &7damage",
                 "&7Takes &c+90% &7damage; leaves iron dust trail",
                 "",
                 "&8Passive CD: &330s &8Spark CD: &31m30s"
