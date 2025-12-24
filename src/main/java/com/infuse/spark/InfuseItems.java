@@ -159,12 +159,12 @@ public class InfuseItems {
             Color.RED,
             List.of(
                 "&9Effect",
-                "&7Grants &c15 total hearts",
+                "&7Gain &c+3 extra hearts",
                 "",
                 "&9Spark Ability",
-                "&7Grants &c20 total hearts",
+                "&7Gain &c+3 more hearts &7and heal fully",
                 "",
-                "&8Duration: &330s &8Cooldown: &360s"
+                "&8Duration: &31m20s &8Cooldown: &32m"
             ),
             InfuseItem.PRIMARY_HEART
         ));
