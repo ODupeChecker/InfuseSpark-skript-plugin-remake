@@ -7,7 +7,6 @@ import com.infuse.spark.SlotHelper;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.entity.Player;
 
 public class StrengthInfuse extends BaseInfuse {
@@ -90,16 +89,11 @@ public class StrengthInfuse extends BaseInfuse {
             return;
         }
         boolean critical = event.isCritical();
-        boolean sweep = event.getCause() == EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK;
-        boolean sprint = player.isSprinting();
-        if (!critical && !(sweep || sprint)) {
-            return;
-        }
         if (!critical) {
             event.setDamage(event.getDamage() * 1.5);
-            player.getWorld().spawnParticle(Particle.CRIT, event.getEntity().getLocation().add(0.0, 1.0, 0.0),
-                12, 0.2, 0.2, 0.2, 0.0);
-            player.getWorld().playSound(event.getEntity().getLocation(), Sound.ENTITY_PLAYER_ATTACK_CRIT, 1.0f, 1.0f);
         }
+        player.getWorld().spawnParticle(Particle.CRIT, event.getEntity().getLocation().add(0.0, 1.0, 0.0),
+            12, 0.2, 0.2, 0.2, 0.0);
+        player.getWorld().playSound(event.getEntity().getLocation(), Sound.ENTITY_PLAYER_ATTACK_CRIT, 1.0f, 1.0f);
     }
 }
