@@ -170,16 +170,21 @@ public class InfuseItems {
         ));
 
         items.put(InfuseItem.PRIMARY_INVISIBILITY, createPotion(
-            "&7Invisibility Effect",
+            "&7Ninja Effect",
             Color.PURPLE,
             List.of(
                 "&9Effect",
-                "&7Grants &oInvisibility",
+                "&7Stand still &o5s &7to gain &oTrue Invisibility",
+                "&7Moving starts a &o4s &7timer that keeps running",
+                "&7Hits while truly invisible deal &c+30% &7damage",
+                "&7Passive cooldown: &e30s",
                 "",
                 "&9Spark Ability",
-                "&7Hides armor and particles",
+                "&7Become &oTruly Invisible &7for &o15s",
+                "&7Take &c+90% &7damage, deal &c+50% &7damage",
+                "&7Leave iron block break particles behind you",
                 "",
-                "&8Duration: &320s &8Cooldown: &3645s"
+                "&8Cooldown: &31m30s"
             ),
             InfuseItem.PRIMARY_INVISIBILITY
         ));
@@ -345,7 +350,7 @@ public class InfuseItems {
             new Ingredient('c', Material.ENCHANTED_GOLDEN_APPLE)
         );
 
-        registerRecipe("invisibility_effect", items.get(InfuseItem.PRIMARY_INVISIBILITY),
+        registerRecipe("ninja_effect", items.get(InfuseItem.PRIMARY_INVISIBILITY),
             "aba", "bcb", "aba",
             new Ingredient('a', Material.ENDER_EYE),
             new Ingredient('b', Material.SCULK_SHRIEKER),

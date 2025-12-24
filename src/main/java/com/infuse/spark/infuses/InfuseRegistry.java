@@ -41,7 +41,7 @@ public class InfuseRegistry {
         register(new StrengthInfuse());
         register(new HeartInfuse());
         register(new HasteInfuse());
-        register(new InvisibilityInfuse());
+        register(new NinjaInfuse());
         register(new FeatherInfuse());
         register(new FrostInfuse());
         register(new ThunderInfuse());
@@ -77,6 +77,8 @@ public class InfuseRegistry {
             piglinInfuse = piglin;
         } else if (infuse instanceof OverdriveInfuse overdrive) {
             overdriveInfuse = overdrive;
+        } else if (infuse instanceof NinjaInfuse) {
+            byKey.put("invisibility", infuse);
         }
     }
 
