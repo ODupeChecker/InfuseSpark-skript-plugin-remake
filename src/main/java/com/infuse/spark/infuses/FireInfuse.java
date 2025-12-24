@@ -4,15 +4,12 @@ import com.infuse.spark.EffectGroup;
 import com.infuse.spark.InfuseItems.InfuseItem;
 import com.infuse.spark.PlayerData;
 import com.infuse.spark.SlotHelper;
-import java.util.UUID;
-import org.bukkit.attribute.Attribute;
+import org.bukkit.entity.Fireball;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.potion.PotionEffectType;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 
 public class FireInfuse extends BaseInfuse {
-    private static final UUID FIRE_ATTACK_MODIFIER = UUID.fromString("b7db23cc-fba1-4f7a-8896-9cf813f6a47b");
-
     public FireInfuse() {
         super(EffectGroup.SUPPORT, 2, "fire", InfuseItem.SUPPORT_FIRE);
     }
@@ -31,6 +28,7 @@ public class FireInfuse extends BaseInfuse {
         int startSeconds = getInt(context, SPARK_SECTION, "cooldown-start-seconds", 0);
         SlotHelper.setSlotCooldown(data, slot, startMinutes, startSeconds);
         data.setFireSparkActive(true);
+        launchFireball(player, context);
         int durationSeconds = getInt(context, SPARK_SECTION, "duration-seconds", 0);
         int endMinutes = getInt(context, SPARK_SECTION, "cooldown-end-minutes", 0);
         int endSeconds = getInt(context, SPARK_SECTION, "cooldown-end-seconds", 0);
@@ -42,37 +40,91 @@ public class FireInfuse extends BaseInfuse {
     }
 
     @Override
-    public void onEntityDamage(EntityDamageEvent event, PlayerData data, InfuseContext context) {
-        if (!(event.getEntity() instanceof Player player)) {
+    public void onEntityDamageByEntity(EntityDamageByEntityEvent event, PlayerData data, InfuseContext context) {
+        if (!SlotHelper.hasEffect(data, EffectGroup.SUPPORT, 2)) {
             return;
         }
-        if (SlotHelper.hasEffect(data, EffectGroup.SUPPORT, 2) && player.getFireTicks() > 0) {
-            event.setCancelled(true);
-            if (data.isFireSparkActive()) {
-                int regenLevel = getInt(context, SPARK_SECTION, "regen-level", 0);
-                int regenDuration = getInt(context, SPARK_SECTION, "regen-duration-seconds", 0);
-                boolean regenParticles = getBoolean(context, SPARK_SECTION, "regen-particles", false);
-                boolean regenIcon = getBoolean(context, SPARK_SECTION, "regen-icon", false);
-                context.applyPotion(player, PotionEffectType.REGENERATION, regenLevel, regenDuration, regenParticles, regenIcon);
-            }
-            double attackDamage = getDouble(context, PASSIVE_SECTION, "attack-damage", 0.0);
-            int attackRefreshTicks = getInt(context, PASSIVE_SECTION, "attack-damage-refresh-ticks", 0);
-            context.applyTemporaryAttributeModifier(player, Attribute.GENERIC_ATTACK_DAMAGE, FIRE_ATTACK_MODIFIER, attackDamage, attackRefreshTicks);
-            int fireResistLevel = getInt(context, PASSIVE_SECTION, "fire-resistance-level", 0);
-            int fireResistDuration = getInt(context, PASSIVE_SECTION, "fire-resistance-duration-seconds", 0);
-            boolean fireResistParticles = getBoolean(context, PASSIVE_SECTION, "fire-resistance-particles", false);
-            boolean fireResistIcon = getBoolean(context, PASSIVE_SECTION, "fire-resistance-icon", false);
-            context.applyPotion(player, PotionEffectType.FIRE_RESISTANCE, fireResistLevel, fireResistDuration, fireResistParticles, fireResistIcon);
+        if (event.isCancelled()) {
+            return;
+        }
+        if (event.getDamager() instanceof Player damager && damager.getUniqueId().equals(data.getUuid())) {
+            handlePlayerHit(event, data, context);
+            return;
+        }
+        if (event.getDamager() instanceof Fireball fireball && fireball.getShooter() instanceof Player shooter
+            && shooter.getUniqueId().equals(data.getUuid()) && data.isFireSparkActive()) {
+            handleFireballImpact(event, context, shooter);
         }
     }
 
     @Override
     public void onPlayerQuit(org.bukkit.event.player.PlayerQuitEvent event, PlayerData data, InfuseContext context) {
-        context.removeAttributeModifier(event.getPlayer(), Attribute.GENERIC_ATTACK_DAMAGE, FIRE_ATTACK_MODIFIER);
+        data.setFireHitCount(0);
     }
 
     @Override
     public void onDisable(Player player, PlayerData data, InfuseContext context) {
-        context.removeAttributeModifier(player, Attribute.GENERIC_ATTACK_DAMAGE, FIRE_ATTACK_MODIFIER);
+        data.setFireHitCount(0);
+    }
+
+    private void handlePlayerHit(EntityDamageByEntityEvent event, PlayerData data, InfuseContext context) {
+        if (!(event.getEntity() instanceof LivingEntity target)) {
+            return;
+        }
+        int hitsToIgnite = getInt(context, PASSIVE_SECTION, "hits-to-ignite", 10);
+        int hitCount = data.getFireHitCount() + 1;
+        if (hitsToIgnite > 0 && hitCount >= hitsToIgnite) {
+            applyIgnite(target, context);
+            hitCount = 0;
+        }
+        data.setFireHitCount(hitCount);
+        applyIgnitedBonus(target, context);
+    }
+
+    private void handleFireballImpact(EntityDamageByEntityEvent event, InfuseContext context, Player shooter) {
+        if (!(event.getEntity() instanceof LivingEntity target)) {
+            return;
+        }
+        double fireballDamageHearts = getDouble(context, SPARK_SECTION, "fireball-true-damage-hearts", 3.5);
+        applyTrueDamage(target, fireballDamageHearts);
+        double radius = getDouble(context, SPARK_SECTION, "fireball-ignite-radius", 5.0);
+        applyIgnite(target, context);
+        target.getWorld().getNearbyEntities(target.getLocation(), radius, radius, radius).stream()
+            .filter(entity -> entity instanceof LivingEntity)
+            .map(entity -> (LivingEntity) entity)
+            .filter(entity -> !entity.getUniqueId().equals(shooter.getUniqueId()))
+            .forEach(entity -> applyIgnite(entity, context));
+        applyIgnitedBonus(target, context);
+    }
+
+    private void launchFireball(Player player, InfuseContext context) {
+        Fireball fireball = player.launchProjectile(Fireball.class);
+        double speed = getDouble(context, SPARK_SECTION, "fireball-speed", 1.0);
+        fireball.setYield(0f);
+        fireball.setIsIncendiary(false);
+        fireball.setVelocity(player.getLocation().getDirection().normalize().multiply(speed));
+    }
+
+    private void applyIgnite(LivingEntity target, InfuseContext context) {
+        int seconds = getInt(context, PASSIVE_SECTION, "ignite-duration-seconds", 4);
+        int ticks = seconds * context.ticksPerSecond();
+        target.setFireTicks(ticks);
+    }
+
+    private void applyIgnitedBonus(LivingEntity target, InfuseContext context) {
+        if (target.getFireTicks() <= 0) {
+            return;
+        }
+        double bonusHearts = getDouble(context, PASSIVE_SECTION, "ignited-true-damage-hearts", 0.5);
+        applyTrueDamage(target, bonusHearts);
+    }
+
+    private void applyTrueDamage(LivingEntity target, double hearts) {
+        if (hearts <= 0) {
+            return;
+        }
+        double healthLoss = hearts * 2.0;
+        double health = target.getHealth();
+        target.setHealth(Math.max(0.0, health - healthLoss));
     }
 }

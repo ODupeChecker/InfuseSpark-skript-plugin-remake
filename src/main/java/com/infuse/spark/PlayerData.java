@@ -34,6 +34,7 @@ public class PlayerData {
     private boolean fireSparkActive;
     private boolean pigSparkPrimed;
     private boolean piglinSparkActive;
+    private int fireHitCount;
 
     public PlayerData(UUID uuid) {
         this.uuid = uuid;
@@ -245,5 +246,13 @@ public class PlayerData {
 
     public void setPiglinSparkActive(boolean piglinSparkActive) {
         this.piglinSparkActive = piglinSparkActive;
+    }
+
+    public int getFireHitCount() {
+        return fireHitCount;
+    }
+
+    public void setFireHitCount(int fireHitCount) {
+        this.fireHitCount = fireHitCount;
     }
 }

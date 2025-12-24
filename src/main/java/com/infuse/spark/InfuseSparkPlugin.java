@@ -49,6 +49,7 @@ import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.entity.Projectile;
 
 public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabCompleter {
     private static final LegacyComponentSerializer LEGACY_SERIALIZER = LegacyComponentSerializer.legacyAmpersand();
@@ -545,6 +546,9 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
     @EventHandler
     public void onDamageByEntity(EntityDamageByEntityEvent event) {
         if (event.getDamager() instanceof Player player) {
+            infuseRegistry.onEntityDamageByDamager(event, getData(player));
+        }
+        if (event.getDamager() instanceof Projectile projectile && projectile.getShooter() instanceof Player player) {
             infuseRegistry.onEntityDamageByDamager(event, getData(player));
         }
         if (event.getEntity() instanceof Player player) {
