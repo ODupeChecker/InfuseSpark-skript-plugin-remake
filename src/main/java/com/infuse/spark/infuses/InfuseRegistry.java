@@ -15,6 +15,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
@@ -211,6 +212,12 @@ public class InfuseRegistry {
     public void onEntityDeath(EntityDeathEvent event, PlayerData data) {
         for (Infuse infuse : infuses) {
             infuse.onEntityDeath(event, data, context);
+        }
+    }
+
+    public void onProjectileHit(ProjectileHitEvent event, PlayerData data) {
+        if (fireInfuse != null) {
+            fireInfuse.onProjectileHit(event, data, context);
         }
     }
 

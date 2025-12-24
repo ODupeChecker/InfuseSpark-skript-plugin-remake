@@ -40,6 +40,8 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -49,7 +51,6 @@ import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.entity.Projectile;
 
 public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabCompleter {
     private static final LegacyComponentSerializer LEGACY_SERIALIZER = LegacyComponentSerializer.legacyAmpersand();
@@ -570,6 +571,15 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         PlayerData data = getData(player);
         infuseRegistry.dropEffectOnDeath(player, data, 2);
         infuseRegistry.dropEffectOnDeath(player, data, 1);
+    }
+
+    @EventHandler
+    public void onProjectileHit(ProjectileHitEvent event) {
+        if (!(event.getEntity().getShooter() instanceof Player player)) {
+            return;
+        }
+        PlayerData data = getData(player);
+        infuseRegistry.onProjectileHit(event, data);
     }
 
     @Override

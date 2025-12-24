@@ -4,12 +4,20 @@ import com.infuse.spark.EffectGroup;
 import com.infuse.spark.InfuseItems.InfuseItem;
 import com.infuse.spark.PlayerData;
 import com.infuse.spark.SlotHelper;
+import java.util.HashSet;
+import java.util.Set;
+import org.bukkit.Location;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.metadata.FixedMetadataValue;
 
 public class FireInfuse extends BaseInfuse {
+    private static final String FIREBALL_TAG = "infuse-spark-fireball";
+    private static final String FIREBALL_PROCESSED_TAG = "infuse-spark-fireball-processed";
+
     public FireInfuse() {
         super(EffectGroup.SUPPORT, 2, "fire", InfuseItem.SUPPORT_FIRE);
     }
@@ -52,8 +60,8 @@ public class FireInfuse extends BaseInfuse {
             return;
         }
         if (event.getDamager() instanceof Fireball fireball && fireball.getShooter() instanceof Player shooter
-            && shooter.getUniqueId().equals(data.getUuid()) && data.isFireSparkActive()) {
-            handleFireballImpact(event, context, shooter);
+            && shooter.getUniqueId().equals(data.getUuid())) {
+            handleFireballImpact(event, context, shooter, fireball);
         }
     }
 
@@ -81,24 +89,42 @@ public class FireInfuse extends BaseInfuse {
         applyIgnitedBonus(target, context);
     }
 
-    private void handleFireballImpact(EntityDamageByEntityEvent event, InfuseContext context, Player shooter) {
-        if (!(event.getEntity() instanceof LivingEntity target)) {
+    public void onProjectileHit(ProjectileHitEvent event, PlayerData data, InfuseContext context) {
+        if (!(event.getEntity() instanceof Fireball fireball)) {
             return;
         }
-        double fireballDamageHearts = getDouble(context, SPARK_SECTION, "fireball-true-damage-hearts", 3.5);
-        applyTrueDamage(target, fireballDamageHearts);
-        double radius = getDouble(context, SPARK_SECTION, "fireball-ignite-radius", 5.0);
-        applyIgnite(target, context);
-        target.getWorld().getNearbyEntities(target.getLocation(), radius, radius, radius).stream()
-            .filter(entity -> entity instanceof LivingEntity)
-            .map(entity -> (LivingEntity) entity)
-            .filter(entity -> !entity.getUniqueId().equals(shooter.getUniqueId()))
-            .forEach(entity -> applyIgnite(entity, context));
-        applyIgnitedBonus(target, context);
+        if (!fireball.hasMetadata(FIREBALL_TAG) || !(fireball.getShooter() instanceof Player shooter)
+            || !shooter.getUniqueId().equals(data.getUuid())) {
+            return;
+        }
+        if (!markFireballProcessed(fireball, context)) {
+            return;
+        }
+        Location impactLocation;
+        if (event.getHitEntity() != null) {
+            impactLocation = event.getHitEntity().getLocation();
+        } else if (event.getHitBlock() != null) {
+            impactLocation = event.getHitBlock().getLocation().add(0.5, 0.5, 0.5);
+        } else {
+            impactLocation = fireball.getLocation();
+        }
+        applyFireballEffects(impactLocation, shooter, context);
+    }
+
+    private void handleFireballImpact(EntityDamageByEntityEvent event, InfuseContext context, Player shooter,
+        Fireball fireball) {
+        if (!(event.getEntity() instanceof LivingEntity)) {
+            return;
+        }
+        if (!fireball.hasMetadata(FIREBALL_TAG) || !markFireballProcessed(fireball, context)) {
+            return;
+        }
+        applyFireballEffects(event.getEntity().getLocation(), shooter, context);
     }
 
     private void launchFireball(Player player, InfuseContext context) {
         Fireball fireball = player.launchProjectile(Fireball.class);
+        fireball.setMetadata(FIREBALL_TAG, new FixedMetadataValue(context.getPlugin(), Boolean.TRUE));
         double speed = getDouble(context, SPARK_SECTION, "fireball-speed", 1.0);
         fireball.setYield(0f);
         fireball.setIsIncendiary(false);
@@ -126,5 +152,30 @@ public class FireInfuse extends BaseInfuse {
         double healthLoss = hearts * 2.0;
         double health = target.getHealth();
         target.setHealth(Math.max(0.0, health - healthLoss));
+    }
+
+    private void applyFireballEffects(Location center, Player shooter, InfuseContext context) {
+        double fireballDamageHearts = getDouble(context, SPARK_SECTION, "fireball-true-damage-hearts", 3.5);
+        double radius = getDouble(context, SPARK_SECTION, "fireball-ignite-radius", 4.5);
+        Set<LivingEntity> affectedEntities = new HashSet<>();
+        center.getWorld().getNearbyEntities(center, radius, radius, radius).stream()
+            .filter(entity -> entity instanceof LivingEntity)
+            .map(entity -> (LivingEntity) entity)
+            .forEach(affectedEntities::add);
+        affectedEntities.stream()
+            .filter(entity -> !entity.getUniqueId().equals(shooter.getUniqueId()))
+            .forEach(entity -> {
+                applyTrueDamage(entity, fireballDamageHearts);
+                applyIgnite(entity, context);
+                applyIgnitedBonus(entity, context);
+            });
+    }
+
+    private boolean markFireballProcessed(Fireball fireball, InfuseContext context) {
+        if (fireball.hasMetadata(FIREBALL_PROCESSED_TAG)) {
+            return false;
+        }
+        fireball.setMetadata(FIREBALL_PROCESSED_TAG, new FixedMetadataValue(context.getPlugin(), Boolean.TRUE));
+        return true;
     }
 }
