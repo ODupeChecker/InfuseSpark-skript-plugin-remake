@@ -20,6 +20,7 @@ function Spork3rInfusePrimaryNinjaSpark(p: player):
     set {Spork3r::Infuse::Primary::Active::%{_p}'s uuid%} to true
     set {Spork3r::Infuse::Primary::Seconds::%{_p}'s uuid%} to 15
     set {Spork3r::Infuse::Primary::Minutes::%{_p}'s uuid%} to 0
+    apply speed 3 to {_p} for 15 seconds replacing the existing effect
     hide {_p} from all players
     wait 15 second
     reveal {_p} from all players

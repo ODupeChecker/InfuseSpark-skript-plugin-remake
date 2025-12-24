@@ -115,7 +115,7 @@ on load:
             set ingredient of "b" to diamond block
             set ingredient of "c" to enchanted golden apple
             
-    set {Spork3r::Infuse::Items::Primary::Ninja} to potion of unbreaking 1 named "&7Ninja Effect" with lore "&9Primary Effect" and "&7Stand still &o5s &7for &oTRUE invisibility" and "&7Timer starts on movement; hits deal &c+30% damage" and "" and "&9Spark Ability" and "&715s TRUE invisibility, &c+50% damage" and "&7Takes &c+90% &7damage with iron dust trail" and "" and "&8Passive CD: &330s &8Spark CD: &31m30s"  with all item flags
+    set {Spork3r::Infuse::Items::Primary::Ninja} to potion of unbreaking 1 named "&7Ninja Effect" with lore "&9Primary Effect" and "&7Stand still &o5s &7for &oTRUE invisibility" and "&7Timer starts on movement; hits deal &c+30% damage" and "&7Gain &bSpeed III &7during true invisibility" and "" and "&9Spark Ability" and "&715s TRUE invisibility, &c+50% damage" and "&7Gain &bSpeed III &7and take &c+90% &7damage with iron dust trail" and "" and "&8Passive CD: &330s &8Spark CD: &31m30s"  with all item flags
     color {Spork3r::Infuse::Items::Primary::Ninja} purple
     register shaped recipe:
         id: "infuse_spark:ninja_effect"

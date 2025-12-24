@@ -62,6 +62,7 @@ public class NinjaInfuse extends BaseInfuse {
         sparkEndTimes.put(player.getUniqueId(), now + durationSeconds * 1000L);
         clearPassiveState(player, context);
         hidePlayerFromAll(player, context);
+        applySpeed(player, context, SPARK_SECTION, durationSeconds);
         int endMinutes = getInt(context, SPARK_SECTION, "cooldown-end-minutes", 0);
         int endSeconds = getInt(context, SPARK_SECTION, "cooldown-end-seconds", 0);
         Bukkit.getScheduler().runTaskLater(context.getPlugin(), () -> {
@@ -128,6 +129,7 @@ public class NinjaInfuse extends BaseInfuse {
             int durationSeconds = getInt(context, PASSIVE_SECTION, "true-duration-seconds", 4);
             passiveState.invisibleUntilMs = now + durationSeconds * 1000L;
             passiveState.timerStarted = true;
+            applySpeed(player, context, PASSIVE_SECTION, durationSeconds);
         }
     }
 
@@ -326,6 +328,13 @@ public class NinjaInfuse extends BaseInfuse {
             sound = Sound.BLOCK_AMETHYST_BLOCK_CHIME;
         }
         player.playSound(player.getLocation(), sound, volume, pitch);
+    }
+
+    private void applySpeed(Player player, InfuseContext context, String section, int durationSeconds) {
+        int level = getInt(context, section, "speed-level", 3);
+        boolean particles = getBoolean(context, section, "speed-particles", false);
+        boolean icon = getBoolean(context, section, "speed-icon", true);
+        context.applyPotion(player, PotionEffectType.SPEED, level, durationSeconds, particles, icon);
     }
 
     private static class PassiveState {

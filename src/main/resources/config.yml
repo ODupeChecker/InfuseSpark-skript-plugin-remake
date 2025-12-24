@@ -90,6 +90,9 @@ infuses:
       activation-sound: "BLOCK_AMETHYST_BLOCK_CHIME"
       activation-sound-volume: 1.0
       activation-sound-pitch: 1.2
+      speed-level: 3
+      speed-particles: false
+      speed-icon: true
     spark:
       cooldown-start-minutes: 0
       cooldown-start-seconds: 15
@@ -100,6 +103,9 @@ infuses:
       incoming-damage-bonus: 0.9
       particle-count: 8
       particle-offset: 0.2
+      speed-level: 3
+      speed-particles: false
+      speed-icon: true
   feather:
     passive:
       action-bar-active: "\uE018"
