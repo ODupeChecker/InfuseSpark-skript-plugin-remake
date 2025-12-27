@@ -47,13 +47,16 @@ public class InfuseItems {
             "&aEmerald Effect",
             Color.fromRGB(144, 238, 144),
             List.of(
-                "&9Effect",
-                "&7Grants &oHero of the Village III",
+                "&aEmerald Effect",
+                "&8No Effects",
                 "",
-                "&9Spark Ability",
-                "&7Upgrades &oHero of the Village III &r&7to &o Hero of the Village ∞",
+                "&a&lPassive effects:",
+                "&a✧ Grants Hero of the Village III",
                 "",
-                "&8Duration: &390s &8Cooldown: &3300s"
+                "&a&lSpark effect:",
+                "&a✧ Upgrades Hero of the Village to ∞",
+                "",
+                "&7duration: &a90s &7cooldown: &a300s"
             ),
             InfuseItem.SUPPORT_EMERALD
         ));
@@ -62,15 +65,18 @@ public class InfuseItems {
             "&6Fire Effect",
             Color.ORANGE,
             List.of(
-                "&9Effect",
-                "&7Every &o10 hits &7ignite enemies for &o4s",
-                "&7Deal &c+0.5❤ true damage &7to ignited enemies",
+                "&6Fire Effect",
+                "&8No Effects",
                 "",
-                "&9Spark Ability",
-                "&7Shoot a fireball that deals &c3.5❤ true damage",
-                "&7Ignites enemies within &o5 blocks &7for &o4s",
+                "&6&lPassive effects:",
+                "&6🔥 Ignite enemies every 10 hits for 4s",
+                "&6🔥 Deal &c+0.5❤ &6true damage to ignited enemies",
                 "",
-                "&8Duration: &31s &8Cooldown: &360s"
+                "&6&lSpark effect:",
+                "&6🔥 Shoot a fireball dealing &c3.5❤ &6true damage",
+                "&6🔥 Ignite enemies within 5 blocks for 4s",
+                "",
+                "&7duration: &61s &7cooldown: &660s"
             ),
             InfuseItem.SUPPORT_FIRE
         ));
@@ -96,13 +102,16 @@ public class InfuseItems {
             "&bSpeed Effect",
             Color.AQUA,
             List.of(
-                "&9Effect",
-                "&7Grants &oSpeed II",
+                "&bSpeed Effect",
+                "&8No Effects",
                 "",
-                "&9Spark Ability",
-                "&7Dash forward",
+                "&b&lPassive effects:",
+                "&b💨 Grants Speed II",
                 "",
-                "&8Duration: &31s &8Cooldown: &315s"
+                "&b&lSpark effect:",
+                "&b💨 Dash forward",
+                "",
+                "&7duration: &b1s &7cooldown: &b15s"
             ),
             InfuseItem.SUPPORT_SPEED
         ));
@@ -111,14 +120,17 @@ public class InfuseItems {
             "&7Feather Effect",
             Color.fromRGB(192, 192, 192),
             List.of(
-                "&9Effect",
-                "&75% chance to inflict &oLevitation (amp 2) &7for &o2s on hit",
+                "&7Feather Effect",
+                "&8No Effects",
                 "",
-                "&9Spark Ability",
-                "&7Enemies within &o8 blocks &7enter a",
-                "&73x levitation cycle (&o2s up, 0.7s down)",
+                "&7&lPassive effects:",
+                "&7✧ 5% chance to inflict Levitation II for 2s on hit",
                 "",
-                "&8Duration: &39s &8Cooldown: &330s"
+                "&7&lSpark effect:",
+                "&7✧ Enemies within 8 blocks enter a levitation cycle",
+                "&7✧ 2s up, 0.7s down (3 times)",
+                "",
+                "&7duration: &79s &7cooldown: &730s"
             ),
             InfuseItem.PRIMARY_FEATHER
         ));
@@ -127,14 +139,18 @@ public class InfuseItems {
             "&3Frost Effect",
             Color.AQUA,
             List.of(
-                "&9Effect",
-                "&7&oSpeed X &7on &3Ice &7& &oSpeed III &7on &bSnow",
+                "&3Frost Effect",
+                "&8No Effects",
                 "",
-                "&9Spark Ability",
-                "&7Inflict &b&oFrostbite &7on attacked enemies",
-                "&7&o+3 Attack damage on frosted enemies",
+                "&3&lPassive effects:",
+                "&3❄ Speed X on Ice",
+                "&3❄ Speed III on Snow",
                 "",
-                "&8Duration: &330s &8Cooldown: &390s"
+                "&3&lSpark effect:",
+                "&3❄ Inflict Frostbite on attacked enemies",
+                "&3❄ Deal &c+3❤ &3damage to frosted enemies",
+                "",
+                "&7duration: &330s &7cooldown: &390s"
             ),
             InfuseItem.PRIMARY_FROST
         ));
@@ -143,13 +159,17 @@ public class InfuseItems {
             "&6Haste Effect",
             Color.YELLOW,
             List.of(
-                "&9Effect",
-                "&7Grants &oHaste II &7and &7&oFortune IV",
+                "&6Haste Effect",
+                "&8No Effects",
                 "",
-                "&9Spark Ability",
-                "&7Upgrades &oHaste II &7to &oInstamine",
+                "&6&lPassive effects:",
+                "&6⛏ Grants Haste II",
+                "&6⛏ Grants Fortune IV",
                 "",
-                "&8Duration: &345s &8Cooldown: &375s"
+                "&6&lSpark effect:",
+                "&6⛏ Upgrades Haste II to Instamine",
+                "",
+                "&7duration: &645s &7cooldown: &675s"
             ),
             InfuseItem.PRIMARY_HASTE
         ));
@@ -158,13 +178,16 @@ public class InfuseItems {
             "&4Heart Effect",
             Color.RED,
             List.of(
-                "&9Effect",
-                "&7Gain &c+3 extra hearts",
+                "&4Heart Effect",
+                "&8No Effects",
                 "",
-                "&9Spark Ability",
-                "&7Gain &c+3 more hearts &7and heal fully",
+                "&4&lPassive effects:",
+                "&4❤ Gain &c+3❤ &4extra hearts",
                 "",
-                "&8Duration: &31m20s &8Cooldown: &32m"
+                "&4&lSpark effect:",
+                "&4❤ Gain &c+3❤ &4more hearts and heal fully",
+                "",
+                "&7duration: &41m20s &7cooldown: &42m"
             ),
             InfuseItem.PRIMARY_HEART
         ));
@@ -173,17 +196,19 @@ public class InfuseItems {
             "&7Ninja Effect",
             Color.PURPLE,
             List.of(
-                "&9Effect",
-                "&7Stand still &o5s &7to gain &oTRUE invisibility",
-                "&7Timer starts when you move; hits deal &c+30% damage",
-                "&7Gain &bSpeed III &7burst for &o4s &7on activation",
+                "&7Ninja Effect",
+                "&8No Effects",
                 "",
-                "&9Spark Ability",
-                "&715s of TRUE invisibility with &c+50% damage",
-                "&7Gain &bSpeed III &7for &o4s &7and take &c+90% &7damage",
-                "&7Takes &c+90% &7damage; leaves iron dust trail",
+                "&5&lPassive effects:",
+                "&5✦ Stand still 5s to gain TRUE invisibility",
+                "&5✦ Hits while invisible deal &c+30% &5damage",
                 "",
-                "&8Passive CD: &330s &8Spark CD: &31m30s"
+                "&5&lSpark effect:",
+                "&5✦ Gain TRUE invisibility for 15s",
+                "&5✦ Deal &c+50% &5damage",
+                "&5✦ Take &c+90% &5damage",
+                "",
+                "&7Passive CD: &530s &7Spark CD: &51m30s"
             ),
             InfuseItem.PRIMARY_NINJA
         ));
@@ -192,14 +217,16 @@ public class InfuseItems {
             "&4Regeneration Effect",
             Color.RED,
             List.of(
-                "&9Effect",
-                "&7Hitting enemies grants &oRegeneration II &7for &o1s",
+                "&4Regeneration Effect",
+                "&8No Effects",
                 "",
-                "&9Spark Ability",
-                "&7Heal for &o25% &7of the health lost by enemies you hit",
-                "&7Lasts &o20s",
+                "&4&lPassive effects:",
+                "&4✚ Hitting enemies grants Regeneration II for 1s",
                 "",
-                "&8Duration: &320s &8Cooldown: &31m10s"
+                "&4&lSpark effect:",
+                "&4✚ Heal for &c25% &4of health lost by enemies you hit",
+                "",
+                "&7duration: &420s &7cooldown: &41m10s"
             ),
             InfuseItem.PRIMARY_REGENERATION
         ));
@@ -208,15 +235,18 @@ public class InfuseItems {
             "&cStrength Effect",
             Color.fromRGB(139, 0, 0),
             List.of(
-                "&9Effect",
-                "&7Deal &o+0.5 hearts &7damage below &c6 hearts",
-                "&7Deal &o+2 hearts &7damage below &c4 hearts",
-                "&7Deal &o+3 hearts &7damage below &c2 hearts",
+                "&cStrength Effect",
+                "&8No Effects",
                 "",
-                "&9Spark Ability",
-                "&7All properly timed hits become &oCritical Hits",
+                "&c&lPassive effects:",
+                "&c💪 Deal &c+0.5❤ &cbelow 6❤",
+                "&c💪 Deal &c+2❤ &cbelow 4❤",
+                "&c💪 Deal &c+3❤ &cbelow 2❤",
                 "",
-                "&8Duration: &310s &8Cooldown: &360s"
+                "&c&lSpark effect:",
+                "&c💪 All properly timed hits become Critical Hits",
+                "",
+                "&7duration: &c10s &7cooldown: &c60s"
             ),
             InfuseItem.PRIMARY_STRENGTH
         ));
@@ -225,15 +255,18 @@ public class InfuseItems {
             "&3Thunder Effect",
             Color.YELLOW,
             List.of(
-                "&9Effect",
-                "&7Strike enemies with &6Lightning &7every &610th &7hit",
-                "&7Deal &60.5 hearts &7of true damage with the strike",
+                "&3Thunder Effect",
+                "&8No Effects",
                 "",
-                "&9Spark Ability",
-                "&7Smite enemies within an &68 block radius &7once",
-                "&7Deal &63 hearts &7of true damage and camera lock for &65s",
+                "&e&lPassive effects:",
+                "&e⚡ Strike enemies with Lightning every 10th hit",
+                "&e⚡ Deal &c0.5❤ &etrue damage",
                 "",
-                "&8Duration: &310s &8Cooldown: &3120s"
+                "&e&lSpark effect:",
+                "&e⚡ Smite enemies within an 8 block radius",
+                "&e⚡ Deal &c3❤ &etrue damage and camera lock for 5s",
+                "",
+                "&7duration: &310s &7cooldown: &3120s"
             ),
             InfuseItem.PRIMARY_THUNDER
         ));
@@ -242,14 +275,17 @@ public class InfuseItems {
             "&d&lPig Effect",
             Color.fromRGB(255, 105, 180),
             List.of(
-                "&9Effect",
-                "&7After being hit 5 times gain &oSpeed III &7for 5s",
-                "&7Take 5% less knockback",
+                "&dPig Effect",
+                "&8No Effects",
                 "",
-                "&9Spark Ability",
-                "&7Send out a barrage of exploding baby pigs",
+                "&d&lPassive effects:",
+                "&d🐷 After being hit 5 times gain Speed III for 5s",
+                "&d🐷 Take 5% less knockback",
                 "",
-                "&8Duration: &31s &8Cooldown: &330s"
+                "&d&lSpark effect:",
+                "&d🐷 Send out a barrage of exploding baby pigs",
+                "",
+                "&7duration: &d1s &7cooldown: &d30s"
             ),
             InfuseItem.PRIMARY_PIG
         ));
@@ -258,14 +294,17 @@ public class InfuseItems {
             "&4&lPiglin Effect",
             Color.fromRGB(139, 0, 0),
             List.of(
-                "&9Effect",
-                "&7Mark attackers for 2s",
-                "&7&o+1.25 Attack Damage on marked targets",
+                "&4Piglin Effect",
+                "&8No Effects",
                 "",
-                "&9Spark Ability",
-                "&7&o+1.8 Attack Damage on marked targets",
+                "&4&lPassive effects:",
+                "&4⚔ Mark attackers for 2s",
+                "&4⚔ Deal &c+1.25❤ &4damage to marked targets",
                 "",
-                "&8Duration: &330s &8Cooldown: &330s"
+                "&4&lSpark effect:",
+                "&4⚔ Deal &c+1.8❤ &4damage to marked targets",
+                "",
+                "&7duration: &430s &7cooldown: &430s"
             ),
             InfuseItem.PRIMARY_PIGLIN
         ));
@@ -274,15 +313,18 @@ public class InfuseItems {
             "&6Overdrive Effect",
             Color.fromRGB(255, 140, 0),
             List.of(
-                "&9Effect",
-                "&740% chance to mirror hits",
-                "&7Echoed hits deal &o-20% damage",
+                "&6Overdrive Effect",
+                "&8No Effects",
                 "",
-                "&9Spark Ability",
-                "&7100% chance to mirror hits",
-                "&7Echoed hits deal &o-10% damage",
+                "&6&lPassive effects:",
+                "&6🔁 40% chance to mirror hits",
+                "&6🔁 Echoed hits deal -20% damage",
                 "",
-                "&8Duration: &36s &8Cooldown: &360s"
+                "&6&lSpark effect:",
+                "&6🔁 100% chance to mirror hits",
+                "&6🔁 Echoed hits deal -10% damage",
+                "",
+                "&7duration: &66s &7cooldown: &660s"
             ),
             InfuseItem.PRIMARY_OVERDRIVE
         ));
