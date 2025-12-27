@@ -257,25 +257,17 @@ infuses:
     passive:
       action-bar-active: "\uE022&9&l"
       action-bar-inactive: "\uE010&f&l"
-      dolphins-grace-level: 1
-      dolphins-grace-duration-seconds: 2
-      dolphins-grace-particles: false
-      dolphins-grace-icon: false
-      conduit-power-level: 1
-      conduit-power-duration-seconds: 2
-      conduit-power-particles: false
-      conduit-power-icon: false
-      attack-damage: 2.0
-      attack-damage-refresh-ticks: 4
+      salted-duration-seconds: 3
+      salted-damage-increase-percent: 5.0
     spark:
       cooldown-start-minutes: 0
       cooldown-start-seconds: 30
-      tick-count: 60
-      tick-interval-ticks: 10
-      regen-level: 1
-      regen-duration-seconds: 2
-      regen-particles: false
-      regen-icon: false
+      wave-max-radius: 9.0
+      wave-max-height: 8
+      wave-expansion-step: 1.0
+      wave-tick-interval-ticks: 2
+      wave-knockback-horizontal: 1.25
+      wave-knockback-vertical: 0.35
       cooldown-end-minutes: 1
       cooldown-end-seconds: 0
   fire:

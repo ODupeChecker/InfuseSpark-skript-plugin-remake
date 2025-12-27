@@ -85,18 +85,15 @@ public class InfuseItems {
             "&3Ocean Effect",
             Color.BLUE,
             List.of(
-                "&3Ocean Effect",
-                "&8No Effects",
+                "&9Effect",
+                "&7Every hit applies &bSalted &7for &o3s",
+                "&7Salted enemies take &c+5% damage",
                 "",
-                "&3&lPassive effects:",
-                "&3🌊 Grants Dolphin's Grace",
-                "&3🌊 Grants Conduit Power",
-                "&3🌊 +2 Attack Damage while in water",
+                "&9Spark Ability",
+                "&7Release a &b9-block water wave",
+                "&7Players hit are knocked away",
                 "",
-                "&3&lSpark effect:",
-                "&3🌊 Regenerate health while in water",
-                "",
-                "&7duration: &330s &7cooldown: &360s"
+                "&8Duration: &32s &8Cooldown: &360s"
             ),
             InfuseItem.SUPPORT_OCEAN
         ));
