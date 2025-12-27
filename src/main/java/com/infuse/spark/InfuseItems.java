@@ -273,7 +273,7 @@ public class InfuseItems {
                 "&d🐷 &7Take 5% less knockback",
                 "",
                 "&d&lSpark effect:",
-                "&d🐷 &7Send out a barrage of exploding baby pigs",
+                "&d🐷 &7instantly heal upon reaching &c4 hearts &6of health",
                 "",
                 "&7duration: &d1s &7cooldown: &d30s"
             ),
