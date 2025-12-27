@@ -9,6 +9,9 @@ commands:
   drain:
     description: Drain the current infuse slot.
     usage: /<command> <1|2>
+  infuses:
+    description: View all available infuses.
+    usage: /<command>
 permissions:
   infuse.command.infusespark:
     description: Allows use of /infuse spark.
