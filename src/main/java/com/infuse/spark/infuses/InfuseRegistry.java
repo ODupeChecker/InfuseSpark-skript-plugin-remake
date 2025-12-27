@@ -80,6 +80,10 @@ public class InfuseRegistry {
         }
     }
 
+    public List<Infuse> getInfuses() {
+        return List.copyOf(infuses);
+    }
+
     public EffectSelection getSelectionByKey(String key) {
         if (key == null) {
             return new EffectSelection(EffectGroup.PRIMARY, 0);

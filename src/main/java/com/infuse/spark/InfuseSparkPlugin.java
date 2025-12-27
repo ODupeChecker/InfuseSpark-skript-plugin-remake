@@ -49,6 +49,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -98,6 +99,7 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
         Objects.requireNonNull(getCommand("infuse")).setTabCompleter(this);
         Objects.requireNonNull(getCommand("drain")).setExecutor(this::handleDrain);
         Objects.requireNonNull(getCommand("drain")).setTabCompleter(this);
+        Objects.requireNonNull(getCommand("infuses")).setExecutor(this::handleInfusesCommand);
 
         Bukkit.getOnlinePlayers().forEach(this::loadPlayerData);
 
@@ -298,6 +300,45 @@ public class InfuseSparkPlugin extends JavaPlugin implements Listener, TabComple
             handleTrustCommand(player, data, args);
             return true;
         }
+        return true;
+    }
+
+    private boolean handleInfusesCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("Player only.");
+            return true;
+        }
+        if (!player.isOp()) {
+            player.sendMessage("You do not have permission.");
+            return true;
+        }
+        List<com.infuse.spark.infuses.Infuse> registeredInfuses = infuseRegistry.getInfuses();
+        if (registeredInfuses.isEmpty()) {
+            player.sendMessage(ChatColor.RED + "No infuses are available.");
+            return true;
+        }
+        Inventory inventory = Bukkit.createInventory(null, 54, ChatColor.LIGHT_PURPLE + "Infuses");
+        int slot = 0;
+        for (com.infuse.spark.infuses.Infuse infuse : registeredInfuses) {
+            InfuseItem itemType = infuse.getItem();
+            if (itemType == null) {
+                continue;
+            }
+            ItemStack itemStack = infuseItems.getItem(itemType);
+            if (itemStack == null) {
+                continue;
+            }
+            if (slot >= inventory.getSize()) {
+                break;
+            }
+            inventory.setItem(slot, itemStack);
+            slot++;
+        }
+        if (slot == 0) {
+            player.sendMessage(ChatColor.RED + "No infuses are available.");
+            return true;
+        }
+        player.openInventory(inventory);
         return true;
     }
 
